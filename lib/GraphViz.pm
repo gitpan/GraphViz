@@ -9,7 +9,7 @@ use Math::Bezier;
 use IPC::Run qw(run binary);
 
 # This is incremented every time there is a change to the API
-$VERSION = '1.7';
+$VERSION = '1.8';
 
 
 =head1 NAME
@@ -722,17 +722,24 @@ Returns a string which contains a layed-out Windows BMP-format file.
 
   print $g->as_wbmp;
 
-=item as_ismap
+=item as_cmap
 
 Returns a string which contains a layed-out HTML client-side image map
 format file.
+
+  print $g->as_cmap;
+
+=item as_ismap
+
+Returns a string which contains a layed-out old-style server-side
+image map format file.
 
   print $g->as_ismap;
 
 =item as_imap
 
-Returns a string which contains a layed-out HTML server-side image map
-format file.
+Returns a string which contains a layed-out HTML new-style server-side
+image map format file.
 
   print $g->as_imap;
 
@@ -794,7 +801,7 @@ sub AUTOLOAD {
     $name = "as_dot";
   }
 
-  if ($name =~ /^as_(ps|hpgl|pcl|mif|pic|gd|gd2|gif|jpeg|png|wbmp|ismap|imap|vrml|vtx|mp|fig|svg|dot|canon|plain)$/) {
+  if ($name =~ /^as_(ps|hpgl|pcl|mif|pic|gd|gd2|gif|jpeg|png|wbmp|cmap|ismap|imap|vrml|vtx|mp|fig|svg|dot|canon|plain)$/) {
     my $data = $self->_as_generic('-T' . $1, $self->_as_debug, $output);
     return $data;
   }

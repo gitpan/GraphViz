@@ -2,7 +2,6 @@ Changes
 MANIFEST
 Makefile.PL
 README
-TODO
 examples/README
 examples/Yapp.output
 examples/clusters.pl
