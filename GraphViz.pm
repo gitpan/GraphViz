@@ -7,7 +7,7 @@ use IPC::Run qw(run);
 use vars qw($AUTOLOAD);
 
 # This is incremented every time there is a change to the API
-$VERSION = '0.07';
+$VERSION = '0.08';
 
 
 =head1 NAME
@@ -350,6 +350,8 @@ sub AUTOLOAD {
   
   my $name = $AUTOLOAD;
   $name =~ s/.*://;   # strip fully-qualified portion
+
+  return if $name =~ /DESTROY/;
 
   if ($name eq 'as_text') {
     $name = "as_dot";

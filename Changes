@@ -1,5 +1,8 @@
 Revision history for Perl module GraphViz.
 
+0.08 Sun Dec  3 15:15:29 GMT 2000
+	- minor patch to cope with DESTROY
+
 0.07 Sun Oct  1 15:19:55 2000
 	- new features: allows clusters and ports
 	- includes the talk I gave on this at yapc::Europe 19100
