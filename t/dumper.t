@@ -1,8 +1,7 @@
 #!/usr/bin/perl -w
 
-use lib '..';
+use lib '../lib', 'lib';
 use GraphViz::Data::Grapher;
-#use GraphViz;
 use Test;
 
 BEGIN { plan tests => 1 }
@@ -43,7 +42,7 @@ $g = GraphViz::Data::Grapher->new(\@d);
 
 -- expect --
 digraph test {
-	node10 [color="red", label="GraphViz"];
+	GraphViz [color="red", label="GraphViz"];
 	node1 [color="blue", label="<port0>@", shape="record"];
 	node2 [color="black", label="<port0>red|<port1>%|<port2>blue|<port3>undef|<port4>Object|<port5>2", shape="record"];
 	node3 [color="brown", label="<port0>a|<port1>b", shape="record"];
@@ -54,7 +53,7 @@ digraph test {
 	node8 [color="blue", label="<port0>a", shape="record"];
 	node9 [color="blue", label="<port0>b", shape="record"];
 	"node1":port0 -> node2;
-	"node2":port4 -> node10;
+	"node2":port4 -> GraphViz;
 	"node2":port1 -> node3;
 	"node3":port0 -> node4;
 	"node3":port1 -> node6;

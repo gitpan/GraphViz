@@ -4,7 +4,7 @@ use lib '../lib', 'lib';
 use GraphViz;
 use Test;
 
-BEGIN { plan tests => 23 }
+BEGIN { plan tests => 25 }
 
 my @lines = <DATA>;
 
@@ -73,7 +73,7 @@ $g = GraphViz->new(directed => 0);
 $g->add_node('London');
 -- expect --
 graph test {
-	node1 [label="London"];
+	London [label="London"];
 }
 
 -- test --
@@ -81,7 +81,7 @@ $g = GraphViz->new();
 $g->add_node('London', label => 'Big smoke');
 -- expect --
 digraph test {
-	node1 [label="Big smoke"];
+	London [label="Big smoke"];
 }
 
 -- test --
@@ -89,7 +89,7 @@ $g = GraphViz->new();
 $g->add_node('London', label => 'Big\nsmoke');
 -- expect --
 digraph test {
-	node1 [label="Big\nsmoke"];
+	London [label="Big\nsmoke"];
 }
 
 -- test --
@@ -97,7 +97,7 @@ $g = GraphViz->new();
 $g->add_node('London', label => 'Big smoke', color => 'red');
 -- expect --
 digraph test {
-	node1 [color="red", label="Big smoke"];
+	London [color="red", label="Big smoke"];
 }
 
 -- test --
@@ -106,8 +106,8 @@ $g->add_node('London');
 $g->add_node('Paris');
 -- expect --
 digraph test {
-	node1 [label="London"];
-	node2 [label="Paris"];
+	London [label="London"];
+	Paris [label="Paris"];
 }
 
 -- test --
@@ -116,8 +116,8 @@ $g->add_node('London');
 $g->add_edge('London' => 'London');
 -- expect --
 digraph test {
-	node1 [label="London"];
-	node1 -> node1;
+	London [label="London"];
+	London -> London;
 }
 
 -- test --
@@ -126,8 +126,8 @@ $g->add_node('London');
 $g->add_edge('London' => 'London', label => 'Foo');
 -- expect --
 digraph test {
-	node1 [label="London"];
-	node1 -> node1 [label="Foo"];
+	London [label="London"];
+	London -> London [label="Foo"];
 }
 
 -- test --
@@ -136,8 +136,8 @@ $g->add_node('London');
 $g->add_edge('London' => 'London', color => 'red');
 -- expect --
 digraph test {
-	node1 [label="London"];
-	node1 -> node1 [color="red"];
+	London [label="London"];
+	London -> London [color="red"];
 }
 
 -- test --
@@ -147,9 +147,9 @@ $g->add_node('Paris');
 $g->add_edge('London' => 'Paris');
 -- expect --
 digraph test {
-	node1 [label="London"];
-	node2 [label="Paris"];
-	node1 -> node2;
+	London [label="London"];
+	Paris [label="Paris"];
+	London -> Paris;
 }
 
 -- test --
@@ -160,10 +160,10 @@ $g->add_edge('London' => 'Paris');
 $g->add_edge('Paris' => 'London');
 -- expect --
 digraph test {
-	node1 [label="London"];
-	node2 [label="Paris"];
-	node1 -> node2;
-	node2 -> node1;
+	London [label="London"];
+	Paris [label="Paris"];
+	London -> Paris;
+	Paris -> London;
 }
 
 -- test --
@@ -176,12 +176,12 @@ $g->add_edge('London' => 'Paris');
 $g->add_edge('Paris' => 'London');
 -- expect --
 digraph test {
-	node1 [label="London"];
-	node2 [label="Paris"];
-	node1 -> node1;
-	node1 -> node2;
-	node2 -> node1;
-	node2 -> node2;
+	London [label="London"];
+	Paris [label="Paris"];
+	London -> London;
+	London -> Paris;
+	Paris -> London;
+	Paris -> Paris;
 }
 
 -- test --
@@ -195,12 +195,12 @@ $g->add_edge('London' => 'New York', label => 'Far');
 $g->add_edge('Paris' => 'London');
 -- expect --
 digraph test {
-	node1 [label="London"];
-	node3 [label="New York"];
-	node2 [label="City of\nlurve"];
-	node1 -> node3 [label="Far"];
-	node1 -> node2;
-	node2 -> node1;
+	London [label="London"];
+	"New York" [label="New York"];
+	Paris [label="City of\nlurve"];
+	London -> "New York" [label="Far"];
+	London -> Paris;
+	Paris -> London;
 }
 
 -- test --
@@ -216,14 +216,14 @@ $g->add_edge('London' => 'New York', label => 'Far');
 $g->add_edge('Paris' => 'London');
 -- expect --
 digraph test {
-	node3 [label="New York"];
-	node1 -> node3 [label="Far"];
-	node1 -> node2;
-	node2 -> node1;
-	subgraph cluster_node4 {
+	"New York" [label="New York"];
+	London -> "New York" [label="Far"];
+	subgraph cluster_Europe {
 		label="Europe";
-		node1 [label="London"];
-		node2 [label="City of\nlurve"];
+		London [label="London"];
+		Paris [label="City of\nlurve"];
+		London -> Paris;
+		Paris -> London;
 	}
 }
 
@@ -243,31 +243,31 @@ foreach my $i (1..16) {
 }
 -- expect --
 graph test {
-	node7 [label="10"];
-	node8 [label="12"];
-	node9 [label="14"];
-	node10 [label="15"];
-	node11 [label="16"];
-	node1 [label="2"];
-	node2 [label="3"];
-	node3 [label="4"];
-	node4 [label="6"];
-	node5 [label="8"];
-	node6 [label="9"];
-	node7 -- node1;
-	node8 -- node1;
-	node8 -- node2;
-	node8 -- node3;
-	node9 -- node1;
-	node10 -- node2;
-	node11 -- node1;
-	node11 -- node3;
-	node3 -- node1;
-	node4 -- node1;
-	node4 -- node2;
-	node5 -- node1;
-	node5 -- node3;
-	node6 -- node2;
+	10 [label="10"];
+	12 [label="12"];
+	14 [label="14"];
+	15 [label="15"];
+	16 [label="16"];
+	2 [label="2"];
+	3 [label="3"];
+	4 [label="4"];
+	6 [label="6"];
+	8 [label="8"];
+	9 [label="9"];
+	10 -- 2;
+	12 -- 2;
+	12 -- 3;
+	12 -- 4;
+	14 -- 2;
+	15 -- 3;
+	16 -- 2;
+	16 -- 4;
+	4 -- 2;
+	6 -- 2;
+	6 -- 3;
+	8 -- 2;
+	8 -- 4;
+	9 -- 3;
 }
 
 -- test --
@@ -282,11 +282,11 @@ $g->add_edge('London' => 'Paris', from_port => 0);
 $g->add_edge('New York' => 'London', to_port => 1);
 -- expect --
 digraph test {
-	node1 [label="<port0>Heathrow|<port1>Gatwick", shape="record"];
-	node3 [label="JFK"];
-	node2 [label="CDG"];
-	"node1":port0 -> node2;
-	node3 -> "node1":port1;
+	London [label="<port0>Heathrow|<port1>Gatwick", shape="record"];
+	"New York" [label="JFK"];
+	Paris [label="CDG"];
+	"London":port0 -> Paris;
+	"New York" -> "London":port1;
 }
 
 -- test --
@@ -310,4 +310,57 @@ $g = GraphViz->new(epsilon => 0.001, random_start => 1)
 digraph test {
 	epsilon=0.001;
 	start=rand;
+}
+
+-- test --
+# Test incremental buildup
+$g = GraphViz->new();
+
+$g->add_node('London');
+$g->add_node('London', cluster => 'Europe');
+$g->add_node('London', color => 'blue');
+$g->add_node('Paris');
+$g->add_node('Paris', label => 'City of\nlurve');
+$g->add_node('Paris', cluster => 'Europe');
+$g->add_node('Paris', color => 'green');
+$g->add_node('New York');
+$g->add_node('New York', color => 'yellow');
+
+$g->add_edge('London' => 'Paris');
+$g->add_edge('London' => 'New York', label => 'Far', color => 'red');
+$g->add_edge('Paris' => 'London');
+-- expect --
+digraph test {
+	"New York" [color="yellow", label="New York"];
+	London -> "New York" [color="red", label="Far"];
+	subgraph cluster_Europe {
+		label="Europe";
+		London [color="blue", label="London"];
+		Paris [color="green", label="City of\nlurve"];
+		London -> Paris;
+		Paris -> London;
+	}
+}
+
+-- test --
+$g = GraphViz->new(node => { shape => 'box' }, edge => { color => 'red' }, graph => { rotate => "90" });
+$g->add_node('London');
+$g->add_node('Paris', label => 'City of\nlurve');
+$g->add_node('New York');
+
+$g->add_edge('London' => 'Paris');
+$g->add_edge('London' => 'New York', label => 'Far');
+$g->add_edge('Paris' => 'London');
+
+-- expect --
+digraph test {
+	node [shape="box"];
+	edge [color="red"];
+	graph [rotate="90"];
+	London [label="London"];
+	"New York" [label="New York"];
+	Paris [label="City of\nlurve"];
+	London -> "New York" [label="Far"];
+	London -> Paris;
+	Paris -> London;
 }

@@ -3,6 +3,7 @@ package GraphViz::Regex;
 use strict;
 use vars qw($VERSION);
 use Carp;
+use Config;
 use lib '../..';
 use lib '..';
 use GraphViz;
@@ -93,10 +94,17 @@ sub _init {
   my $compiled;
   my $foo;
 
+#installbin . '/perl'
+#perlpath
+  my $perl = $Config{perlpath};
+  warn "perlpath: $perl\n" if $DEBUG;
+
   my $option = qq|use re "debug";qr/$regex/;|;
-  run ['perl'], \$option, \$foo, \$compiled;
+  run [$perl], \$option, \$foo, \$compiled;
 
   warn "[$compiled]\n" if $DEBUG;
+
+#  die "Crap" unless $compiled;
 
   my $g = GraphViz->new();
 
@@ -215,5 +223,25 @@ sub _init {
 
   return $g;
 }
+
+=head1 BUGS
+
+Note that this module relies on debugging information provided by
+Perl, and is known to fail on at least two versions of Perl: 5.005_03
+and 5.7.1. Sorry about that - please use a more recent version of Perl
+if you want to use this module.
+
+=head1 AUTHOR
+
+Leon Brocard E<lt>F<acme@astray.com>E<gt>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2000-1, Leon Brocard
+
+This module is free software; you can redistribute it or modify it
+under the same terms as Perl itself.
+
+=cut
 
 1;

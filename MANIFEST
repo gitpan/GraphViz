@@ -25,6 +25,8 @@ examples/redcarpet.pl
 examples/redcarpet.png
 examples/regex.pl
 examples/regex.png
+examples/regex_yape.pl
+examples/regex_yape.png
 examples/remote.pl
 examples/remote.png
 examples/simple.pl
@@ -43,10 +45,11 @@ lib/GraphViz/Data/Grapher.pm
 lib/GraphViz/No.pm
 lib/GraphViz/Parse/RecDescent.pm
 lib/GraphViz/Regex.pm
+lib/GraphViz/Regex_YAPE.pm
 lib/GraphViz/Remote.pm
 lib/GraphViz/Small.pm
 lib/GraphViz/XML.pm
 t/dumper.t
 t/simple.t
-t/regex.t
+
 

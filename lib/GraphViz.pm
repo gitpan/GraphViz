@@ -9,7 +9,7 @@ use Math::Bezier;
 use IPC::Run qw(run);
 
 # This is incremented every time there is a change to the API
-$VERSION = '0.13';
+$VERSION = '0.14';
 
 
 =head1 NAME
@@ -147,6 +147,14 @@ the solver to fun longer and potentially give a better layout. Larger
 values can decrease the running time but with a reduction in layout
 quality. The default is 0.1.
 
+The 'node', 'edge' and 'graph' attributes allow you to specify global
+node, edge and graph attributes (in addition to those controlled by
+the special attributes described above). The value should be a hash
+reference containing the corresponding key-value pairs. For example,
+to make all nodes box-shaped (unless explicity given another shape):
+
+  my $g = GraphViz->new(node => {shape => 'box'});
+
 =cut
 
 
@@ -184,6 +192,11 @@ sub new {
 
   $self->{EPSILON} = $config->{epsilon} if (exists $config->{epsilon});
 
+  # Global node, edge and graph attributes
+  $self->{NODE_ATTRS} = $config->{node} if (exists $config->{node});
+  $self->{EDGE_ATTRS} = $config->{edge} if (exists $config->{edge});
+  $self->{GRAPH_ATTRS} = $config->{graph} if (exists $config->{graph});
+
   bless($self, $class);
   return $self;
 }
@@ -207,6 +220,14 @@ Various attributes are possible: "label" provides a label for the node
 contain embedded newlines with '\n', as well as '\c', '\l', '\r' for
 center, left, and right justified lines:
 
+  $g->add_node('Paris', label => 'City of\nlurve');
+
+Attributes need not all be specified in the one line: successive
+declarations of the same node have a cumulative effect, in that any
+later attributes are just added to the existing ones. For example, the
+following two lines are equivalent to the one above:
+
+  $g->add_node('Paris');
   $g->add_node('Paris', label => 'City of\nlurve');
 
 Note that multiple attributes can be specified. Other attributes
@@ -313,8 +334,13 @@ sub add_node {
     $node->{name} = $node->{_code};
   }
 
-  if (not exists $node->{label}) {
-    $node->{label} = $node->{name};
+  if (not exists $node->{label})  {
+    if (exists $self->{NODES}->{$node->{name}} and defined $self->{NODES}->{$node->{name}}->{label}) {
+      # keep our old label if we already exist
+      $node->{label} = $self->{NODES}->{$node->{name}}->{label};
+    } else {
+      $node->{label} = $node->{name};
+    }
   }
 
   $node->{_label} =  $node->{label};
@@ -326,10 +352,18 @@ sub add_node {
     $node->{label} = join '|', map
       { $_ =~ s#([|<>\[\]{}"])#\\$1#g; '<port' . $nports++ . '>' . $_ }
       (@{$node->{label}});
-#    $node->{label} = '{' . $node->{label} . '}'; Vertical ports for Trelane?
   }
 
-  $self->{NODES}->{$node->{name}} = $node; # should remove!
+  # Save ourselves
+  if (!exists($self->{NODES}->{$node->{name}})) {
+    $self->{NODES}->{$node->{name}} = $node;
+  } else {
+    # If the node already exists, add or overwrite attributes.
+    foreach (keys %$node) {
+      $self->{NODES}->{$node->{name}}->{$_} = $node->{$_};
+    }
+  }
+
   $self->{CODES}->{$node->{_code}} = $node->{name};
   $self->{GRAPH}->add_vertex($node->{name});
 
@@ -471,6 +505,16 @@ sub add_edge {
   }
 
   push @{$self->{EDGES}}, $edge; # should remove!
+
+  # The Graph module is strict about the nodes existing before we add
+  # edges, but graphviz is not, so we check. Any nodes that don't
+  # exist, we create with all the default attributes.
+  unless ($self->{GRAPH}->has_vertex($edge->{from})) {
+    $self->add_node($edge->{from});
+  }
+  unless ($self->{GRAPH}->has_vertex($edge->{to})) {
+    $self->add_node($edge->{to});
+  }
 
   $self->{GRAPH}->add_edge($edge->{from} => $edge->{to});
 
@@ -762,6 +806,14 @@ sub _as_debug {
   # random start
   $dot .= "\tstart=rand;\n" if $self->{RANDOM_START};
 
+  # Global node, edge and graph attributes
+  $dot .= "\tnode" . _attributes($self->{NODE_ATTRS}) . ";\n"
+    if exists($self->{NODE_ATTRS});
+  $dot .= "\tedge" . _attributes($self->{EDGE_ATTRS}) . ";\n"
+    if exists($self->{EDGE_ATTRS});
+  $dot .= "\tgraph" . _attributes($self->{GRAPH_ATTRS}) . ";\n"
+    if exists($self->{GRAPH_ATTRS});
+
   my %clusters = ();
   my %clusters_edge = ();
 
@@ -844,7 +896,12 @@ sub _quote_name {
 
   return $self->{_QUOTE_NAME_CACHE}->{$name} if exists $self->{_QUOTE_NAME_CACHE}->{$name};
 
-  if (!defined($name) || $name !~ /^[a-z]+$/) {
+  if (defined $name && $name =~ /^\w+$/) {
+    # name is fine
+  } elsif (defined $name && $name =~ /^(\w| )+$/) {
+    # name contains spaces, so quote it
+    $name = '"' . $name . '"';
+  } else {
     # name contains weird characters - let's make up a name for it
     $name = 'node' . ++$self->{_NAME_COUNTER};
   }

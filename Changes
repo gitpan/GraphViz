@@ -1,5 +1,22 @@
 Revision history for Perl module GraphViz.
 
+0.14 Thu May  3 17:57:57 BST 2001
+	- added support for InterpLit node in RecDescent grammars
+	- added cumulative effect for node attributes (patch by Diego
+	  Zamboni)
+	- changed the quoting rules again to make it easier to read
+	  the dot files (idea by Diego Zamboni)
+	- make add_edge() automatically add any nodes specified for
+	  the edge that have not been previously added to stop the
+	  Graph module complaining (patch by Diego Zamboni)
+	- new 'node', 'edge', and 'graph' graph attributes to specify
+	  global node, edge, and graph attributes (patch by Diego
+	  Zamboni)
+	- removed t/regex.t and documented that GraphViz::Regex may
+	  not work on various perls
+	- added GraphViz::Regex_YAPE module, another way to graph
+	  a regular expression
+
 0.13 Mon Mar 19 19:31:18 GMT 2001
 	- removed 'use warnings' as suggested by David Adler so we
           no longer require Perl 5.6

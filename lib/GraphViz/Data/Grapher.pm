@@ -19,7 +19,7 @@ GraphViz::Data::Grapher - Visualise data structures as a graph
   use GraphViz::Data::Grapher;
 
   my $graph = GraphViz::Data::Grapher->new($structure);
-  print $g->as_png;
+  print $graph->as_png;
 
 =head1 DESCRIPTION
 
@@ -73,10 +73,10 @@ as_imap, as_vrml, as_vtx, as_mp, as_fig, as_svg. See the GraphViz
 documentation for more information. The two most common methods are:
 
   # Print out a PNG-format file
-  print $g->as_png;
+  print $graph->as_png;
 
   # Print out a PostScript-format file
-  print $g->as_ps;
+  print $graph->as_ps;
 
 =cut
 
