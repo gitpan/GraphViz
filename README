@@ -1,0 +1,11 @@
+NAME
+       GraphViz - Interface to the GraphViz graphing tool
+
+DESCRIPTION
+       This provides an object-orientated interface to generating
+       the ".dot" files needed by the "dotneato" program in the
+       GraphViz project (http://www.graphviz.org/). It constructs
+       a file which can then be used to draw directed graphs in a
+       variety of formats (Postscript, GIF, etc.)
+
+See the documentation for more information!
