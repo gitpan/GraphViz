@@ -3,7 +3,7 @@
 # A dead simple example
 
 use strict;
-use lib '..';
+use lib '../lib';
 use GraphViz::Remote;
 
 my $g = GraphViz::Remote->new();

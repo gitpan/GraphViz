@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
-use lib '..';
+use lib '../lib';
 use GraphViz::Parse::RecDescent;
 
 # The grammar below was taken from the Parse::RecDescent

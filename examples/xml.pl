@@ -3,7 +3,7 @@
 # A example which represents some XML as a tree
 
 use strict;
-use lib '..';
+use lib '../lib';
 use GraphViz::XML;
 
 my $xml = '<html><head><title>news</title></head><body>

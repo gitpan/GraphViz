@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
-use lib '..';
+use lib '../lib';
 use IO::Dir;
 use GraphViz;
 use GraphViz::Small;

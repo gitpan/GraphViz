@@ -1,6 +1,5 @@
 package GraphViz;
 
-use warnings;
 use strict;
 use vars qw($AUTOLOAD $VERSION);
 
@@ -10,7 +9,7 @@ use Math::Bezier;
 use IPC::Run qw(run);
 
 # This is incremented every time there is a change to the API
-$VERSION = '0.12';
+$VERSION = '0.13';
 
 
 =head1 NAME
@@ -101,6 +100,15 @@ Note that Marcel Grunauer has released some modules on CPAN to graph
 various other structures. See GraphViz::DBI and GraphViz::ISA for
 example.
 
+=head2 Award winning!
+
+I presented a paper and talk on "Graphing Perl" using GraphViz at the
+3rd German Perl Workshop and received the "Best Knowledge Transfer"
+prize.
+
+    Talk: http://www.astray.com/graphing_perl/graphing_perl.pdf
+  Slides: http://www.astray.com/graphing_perl/
+
 =head1 METHODS
 
 =head2 new
@@ -124,6 +132,20 @@ can not be set, although there are generally 96 pixels per inch.
   my $g = GraphViz->new(directed => 0);
   my $g = GraphViz->new(rankdir  => 1);
   my $g = GraphViz->new(width => 4, height => 2);
+
+The 'concentrate' attribute controls enables an edge merging technique
+to reduce clutter in dense layouts of directed graphs. The default is
+not to merge edges.
+
+For undirected graphs, the 'random_start' attribute requests an
+initial random placement for the graph, which may give a better
+result. The default is not random.
+
+For undirected graphs, the 'epsilon' attribute decides how long the
+graph solver tries before finding a graph layout. Lower numbers allow
+the solver to fun longer and potentially give a better layout. Larger
+values can decrease the running time but with a reduction in layout
+quality. The default is 0.1.
 
 =cut
 
@@ -154,7 +176,13 @@ sub new {
   $self->{RANK_DIR} = $config->{rankdir} if (exists $config->{rankdir});
 
   $self->{WIDTH} = $config->{width} if (exists $config->{width});
-  $self->{HEIGHT} = $config->{height} if (exists $config->{width});
+  $self->{HEIGHT} = $config->{height} if (exists $config->{height});
+
+  $self->{CONCENTRATE} = $config->{concentrate} if (exists $config->{concentrate});
+
+  $self->{RANDOM_START} = $config->{random_start} if (exists $config->{random_start});
+
+  $self->{EPSILON} = $config->{epsilon} if (exists $config->{epsilon});
 
   bless($self, $class);
   return $self;
@@ -243,7 +271,7 @@ use this name later on to refer to this node:
 
 Nodes can be clustered together with the "cluster" attribute, which is
 drawn by having a labelled rectangle around all the nodes in a
-cluster.
+cluster. An empty string means not clustered.
 
   $g->add_node('London', cluster => 'Europe');
   $g->add_node('Amsterdam', cluster => 'Europe');
@@ -725,6 +753,15 @@ sub _as_debug {
   # the size of the graph
   $dot .= "\tsize=\"" . $self->{WIDTH} . "," . $self->{HEIGHT} ."\";\n\tratio=fill\n" if $self->{WIDTH} && $self->{HEIGHT};
 
+  # edge merging
+  $dot .= "\tconcentrate=true;\n" if $self->{CONCENTRATE};
+
+  # epsilon
+  $dot .= "\tepsilon=" . $self->{EPSILON} . ";\n" if $self->{EPSILON};
+
+  # random start
+  $dot .= "\tstart=rand;\n" if $self->{RANDOM_START};
+
   my %clusters = ();
   my %clusters_edge = ();
 
@@ -735,7 +772,7 @@ sub _as_debug {
     my $node = $self->{NODES}->{$name};
 
     # Note all the clusters
-    if (exists $node->{cluster}) {
+    if (exists $node->{cluster} && $node->{cluster}) {
       push @{$clusters{$node->{cluster}}}, $name;
       next;
     }

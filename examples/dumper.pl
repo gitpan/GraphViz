@@ -5,7 +5,7 @@
 # than Data::Dumper
 
 use strict;
-use lib '..';
+use lib '../lib';
 use GraphViz::Data::Grapher;
 
 my(@d);

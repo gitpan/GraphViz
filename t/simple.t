@@ -1,10 +1,10 @@
 #!/usr/bin/perl -w
 
-use lib '..';
+use lib '../lib', 'lib';
 use GraphViz;
 use Test;
 
-BEGIN { plan tests => 21 }
+BEGIN { plan tests => 23 }
 
 my @lines = <DATA>;
 
@@ -295,4 +295,19 @@ $g = GraphViz->new(width => 400, height => 400)
 digraph test {
 	size="400,400";
 	ratio=fill
+}
+
+-- test --
+$g = GraphViz->new(concentrate => 1)
+-- expect --
+digraph test {
+	concentrate=true;
+}
+
+-- test --
+$g = GraphViz->new(epsilon => 0.001, random_start => 1)
+-- expect --
+digraph test {
+	epsilon=0.001;
+	start=rand;
 }

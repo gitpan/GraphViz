@@ -6,7 +6,7 @@
 
 
 use strict;
-use lib '..';
+use lib '../lib';
 use GraphViz;
 use GraphViz::No;
 use GraphViz::Small;

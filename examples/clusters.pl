@@ -6,7 +6,7 @@
 
 
 use strict;
-use lib '..';
+use lib '../lib';
 use GraphViz;
 
 my $g = GraphViz->new();

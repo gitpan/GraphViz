@@ -1,5 +1,22 @@
 Revision history for Perl module GraphViz.
 
+0.13 Mon Mar 19 19:31:18 GMT 2001
+	- removed 'use warnings' as suggested by David Adler so we
+          no longer require Perl 5.6
+	- moved all modules into a new 'lib' directory (and updated
+	  examples) so that Devel::GraphVizProf gets installed
+	- new 'concentrate' graph attribute to merge edges in
+	  cluttered directed graphs
+	- new 'random_start' graph attribute, which requests an
+	  initial random placement for the graph
+	- new 'epsilon' graph attribute, which decides how long the
+	  graph solver tries before finding a graph layout, requested
+	  by Pierre-Yves Genot
+	- an empty cluster now means not clustered
+	- added GraphViz::Regex and example regexp.pl which visualises
+	  a regular expression
+	- now an award-winning module!
+
 0.12
 	- fixed bug in redcarpet.pl example
 	- new rankdir graph attribute, which controls the direction

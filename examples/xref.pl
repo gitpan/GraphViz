@@ -57,7 +57,7 @@ under the same terms as Perl itself.
 =cut
 
 use strict;
-use lib '..';
+use lib '../lib';
 use GraphViz;
 use IO::File;
 

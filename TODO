@@ -3,13 +3,9 @@ including:
 
   o Graphing Perl code blocks
   o Graphing Perl 6 RFCs
-  o Graphing regular expressions as a state machine
   o Outputing GraphML
   o Graphing databases
   o Output a graph to ASCII
   o Graphing the symbol table
-  o Producing a SOAP interface to this module
   o Graphing RDF
 
-Getting back the coordinates of graph nodes and edges is planned, too
-;-)

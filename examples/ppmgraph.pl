@@ -1,9 +1,8 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
-use warnings;
 use strict;
 
-use lib '..';
+use lib '../lib';
 use Getopt::Long;
 use Pod::Usage;
 use GraphViz;
