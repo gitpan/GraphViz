@@ -17,11 +17,13 @@ examples/port.pl
 examples/ppmgraph.pl
 examples/primes.pl
 examples/primes_aux.pl
+examples/rank.pl
 examples/recdescent.pl
 examples/redcarpet.pl
 examples/regex.pl
 examples/remote.pl
 examples/simple.pl
+examples/text.pl
 examples/tmon.out
 examples/undirected.pl
 examples/xml.pl

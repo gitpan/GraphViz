@@ -4,7 +4,7 @@ use lib '../lib', 'lib';
 use GraphViz;
 use Test;
 
-BEGIN { plan tests => 26 }
+BEGIN { plan tests => 28 }
 
 my @lines = <DATA>;
 
@@ -243,31 +243,31 @@ foreach my $i (1..16) {
 }
 -- expect --
 graph test {
-	10 [label="10"];
-	12 [label="12"];
-	14 [label="14"];
-	15 [label="15"];
-	16 [label="16"];
-	2 [label="2"];
-	3 [label="3"];
-	4 [label="4"];
-	6 [label="6"];
-	8 [label="8"];
-	9 [label="9"];
-	10 -- 2;
-	12 -- 2;
-	12 -- 3;
-	12 -- 4;
-	14 -- 2;
-	15 -- 3;
-	16 -- 2;
-	16 -- 4;
-	4 -- 2;
-	6 -- 2;
-	6 -- 3;
-	8 -- 2;
-	8 -- 4;
-	9 -- 3;
+	node7 [label="10"];
+	node8 [label="12"];
+	node9 [label="14"];
+	node10 [label="15"];
+	node11 [label="16"];
+	node1 [label="2"];
+	node2 [label="3"];
+	node3 [label="4"];
+	node4 [label="6"];
+	node5 [label="8"];
+	node6 [label="9"];
+	node7 -- node1;
+	node8 -- node1;
+	node8 -- node2;
+	node8 -- node3;
+	node9 -- node1;
+	node10 -- node2;
+	node11 -- node1;
+	node11 -- node3;
+	node3 -- node1;
+	node4 -- node1;
+	node4 -- node2;
+	node5 -- node1;
+	node5 -- node3;
+	node6 -- node2;
 }
 
 -- test --
@@ -383,4 +383,44 @@ digraph test {
 	d [label="d"];
 	e [label="e"];
 	f [label="f"];
+}
+
+-- test --
+$g = GraphViz->new(sort => 1);
+$g->add_edge('a' => 'b');
+$g->add_edge('b' => 'c');
+$g->add_edge('c' => 'a');
+
+-- expect --
+digraph test {
+	a [label="a"];
+	b [label="b"];
+	c [label="c"];
+	a -> b;
+	b -> c;
+	c -> a;
+}
+
+-- test --
+$g = GraphViz->new(sort => 1);
+
+$g->add_node('London');
+$g->add_node('Paris', label => 'City of\nlurve', rank => 'top');
+$g->add_node('New York');
+$g->add_node('Boston', rank => 'top');
+
+$g->add_edge('Paris' => 'London');
+$g->add_edge('London' => 'New York', label => 'Far');
+$g->add_edge('Boston' => 'New York');
+
+-- expect --
+digraph test {
+	Boston [label="Boston", rank="top"];
+	London [label="London"];
+	"New York" [label="New York"];
+	Paris [label="City of\nlurve", rank="top"];
+	Boston -> "New York";
+	London -> "New York" [label="Far"];
+	Paris -> London;
+	{rank=same; Boston; Paris}
 }

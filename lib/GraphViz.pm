@@ -9,7 +9,7 @@ use Math::Bezier;
 use IPC::Run qw(run);
 
 # This is incremented every time there is a change to the API
-$VERSION = '1.2';
+$VERSION = '1.3';
 
 
 =head1 NAME
@@ -29,7 +29,6 @@ GraphViz - Interface to the GraphViz graphing tool
   $g->add_edge('London' => 'Paris');
   $g->add_edge('London' => 'New York', label => 'Far');
   $g->add_edge('Paris' => 'London');
-
 
   print $g->as_png;
 
@@ -306,6 +305,13 @@ cluster. An empty string means not clustered.
   $g->add_node('London', cluster => 'Europe');
   $g->add_node('Amsterdam', cluster => 'Europe');
 
+Nodes can be located in the same rank (that is, at the same level in
+the graph) with the "rank" attribute. Nodes with the same rank value
+are ranked together.
+
+  $g->add_node('Paris', rank => 'top');
+  $g->add_node('Boston', rank => 'top');
+
 Also, nodes can consist of multiple parts (known as ports). This is
 implemented by passing an array reference as the label, and the parts
 are displayed as a label. GraphViz has a much more complete port
@@ -351,6 +357,9 @@ sub add_node {
       $node->{label} = $node->{name};
     }
   }
+
+  delete $node->{cluster}
+    if exists $node->{cluster} && !length $node->{cluster} ;
 
   $node->{_label} =  $node->{label};
 
@@ -902,6 +911,22 @@ sub _as_debug {
     $dot .= "\t}\n";
   }
 
+  # Deal with ranks
+  my %ranks;
+  foreach my $name (@nodelist) {
+    my $node = $self->{NODES}->{$name};
+    next unless exists $node->{rank};
+    push @{$ranks{$node->{rank}}}, $name;
+  }
+
+  foreach my $rank (keys %ranks) {
+    $dot .= qq|\t{rank=same; |;
+    $dot .= join '; ', map { $self->_quote_name($_) } @{$ranks{$rank}};
+    $dot .= qq|}\n|;
+  }
+# {rank=same; Paris; Boston}
+
+
   $dot .= "}\n";
 
   return $dot;
@@ -930,9 +955,9 @@ sub _quote_name {
 
   return $self->{_QUOTE_NAME_CACHE}->{$name} if exists $self->{_QUOTE_NAME_CACHE}->{$name};
 
-  if (defined $name && $name =~ /^\w+$/) {
+  if (defined $name && $name =~ /^[a-zA-Z]\w*$/) {
     # name is fine
-  } elsif (defined $name && $name =~ /^(\w| )+$/) {
+  } elsif (defined $name && $name =~ /^[a-zA-Z](\w| )*$/) {
     # name contains spaces, so quote it
     $name = '"' . $name . '"';
   } else {
@@ -961,8 +986,10 @@ sub _attributes {
     next if $key =~ /^(to|from|name|cluster|from_port|to_port)$/;
 
     my $value = $thing->{$key};
+    $value =~ s|"|\"|g;
     $value = '"' . $value . '"';
     $value =~ s|\n|\\n|g;
+
 
     $value = '""' if not defined $value;
     push @attributes, "$key=$value";

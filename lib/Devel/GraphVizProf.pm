@@ -1,6 +1,6 @@
 package Devel::GraphVizProf; # To help the CPAN indexer to identify us
 
-$Devel::GraphVizProf::VERSION = '0.7'; 
+$Devel::GraphVizProf::VERSION = '0.8';
 
 package DB;
 
