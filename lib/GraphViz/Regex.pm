@@ -12,7 +12,7 @@ use IPC::Run qw(run);
 # See perldebguts
 
 # This is incremented every time there is a change to the API
-$VERSION = '0.01';
+$VERSION = '0.02';
 
 my $DEBUG = 0; # whether debugging statements are shown
 
@@ -94,8 +94,6 @@ sub _init {
   my $compiled;
   my $foo;
 
-#installbin . '/perl'
-#perlpath
   my $perl = $Config{perlpath};
   warn "perlpath: $perl\n" if $DEBUG;
 
@@ -106,7 +104,7 @@ sub _init {
 
 #  die "Crap" unless $compiled;
 
-  my $g = GraphViz->new();
+  my $g = GraphViz->new(rankdir => 1);
 
   my %states;
   my %following;
@@ -122,6 +120,14 @@ sub _init {
   my %done;
   my @todo = (1);
 
+  warn "last id: $last_id\n" if $DEBUG;
+
+  if (not defined $last_id) {
+    $g->add_node("Error compiling regex");
+    return $g;
+  }
+
+
   while (@todo) {
     my $id = pop @todo;
     next unless $id;
@@ -130,13 +136,15 @@ sub _init {
     my $following = $following{$id};
     my($next) = $state =~ /\((\d+)\)$/;
 
+#    warn "todo: " . join(", ", @todo) . "\n" if $DEBUG;
+
     push @todo, $following;
     push @todo, $next if $next;
 
     my $match;
 
     warn "$id:\t$state\n" if $DEBUG;
-    if (($match) = $state =~ /^EXACT <(.+)>/) {
+    if (($match) = $state =~ /^EXACTF?L? <(.+)>/) {
       warn "\t$match $next\n" if $DEBUG;
       $g->add_node($id, label => $match, shape => 'box');
       $g->add_edge($id => $next) if $next != 0;
@@ -149,7 +157,7 @@ sub _init {
     } elsif (($match) = $state =~ /^OPEN(\d+)/) {
       warn "\tOPEN $match $next\n" if $DEBUG;
       $g->add_node($id, label => 'START \$' . $match);
-      $g->add_edge($id => $next);
+      $g->add_edge($id => $following);
     } elsif (($match) = $state =~ /^CLOSE(\d+)/) {
       warn "\tCLOSE $match $next\n" if $DEBUG;
       $g->add_node($id, label => 'END \$' . $match);
@@ -162,7 +170,7 @@ sub _init {
       warn "\tbranch $branch / " . ($following) . "\n" if $DEBUG;
       my @children;
       push @children, $following;
-      while ($states{$branch} =~ /^BRANCH/) {
+      while ($states{$branch} =~ /^BRANCH|TAIL/) {
 	warn "\tdoing branch $branch\n" if $DEBUG;
 	$done{$branch}++;
 	push @children, $following{$branch};
@@ -211,6 +219,21 @@ sub _init {
       warn "\tSUCCEED $next\n" if $DEBUG;
       $g->add_node($id, label => 'SUCCEED');
       $done{$following}++;
+    } elsif ($state =~ /^UNLESSM/) {
+      warn "\tUNLESSM $next\n" if $DEBUG;
+      $g->add_node($id, label => 'UNLESS');
+      $g->add_edge($id => $following);
+      $g->add_edge($id => $next, style => 'dashed');
+    } elsif ($state =~ /^IFMATCH/) {
+      warn "\tIFMATCH $next\n" if $DEBUG;
+      $g->add_node($id, label => 'IFMATCH');
+      $g->add_edge($id => $following);
+      $g->add_edge($id => $next, style => 'dashed');
+    } elsif ($state =~ /^IFTHEN/) {
+      warn "\tIFTHEN $next\n" if $DEBUG;
+      $g->add_node($id, label => 'IFTHEN');
+      $g->add_edge($id => $following);
+      $g->add_edge($id => $next, style => 'dashed');
     } elsif ($state =~ /^([A-Z_0-9]+)/) {
       my ($state) = ($1, $2);
       warn "\t? $state $next\n" if $DEBUG;

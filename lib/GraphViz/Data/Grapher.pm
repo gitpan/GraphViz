@@ -56,7 +56,7 @@ sub new {
   my $class = ref($proto) || $proto;
   my @items = @_;
 
-  my $graph = GraphViz->new();
+  my $graph = GraphViz->new(sort => 1);
 
   _init($graph, @items);
 

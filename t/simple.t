@@ -4,7 +4,7 @@ use lib '../lib', 'lib';
 use GraphViz;
 use Test;
 
-BEGIN { plan tests => 25 }
+BEGIN { plan tests => 26 }
 
 my @lines = <DATA>;
 
@@ -101,7 +101,7 @@ digraph test {
 }
 
 -- test --
-$g = GraphViz->new();
+$g = GraphViz->new(sort => 1);
 $g->add_node('London');
 $g->add_node('Paris');
 -- expect --
@@ -111,7 +111,7 @@ digraph test {
 }
 
 -- test --
-$g = GraphViz->new();
+$g = GraphViz->new(sort => 1);
 $g->add_node('London');
 $g->add_edge('London' => 'London');
 -- expect --
@@ -121,7 +121,7 @@ digraph test {
 }
 
 -- test --
-$g = GraphViz->new();
+$g = GraphViz->new(sort => 1);
 $g->add_node('London');
 $g->add_edge('London' => 'London', label => 'Foo');
 -- expect --
@@ -131,7 +131,7 @@ digraph test {
 }
 
 -- test --
-$g = GraphViz->new();
+$g = GraphViz->new(sort => 1);
 $g->add_node('London');
 $g->add_edge('London' => 'London', color => 'red');
 -- expect --
@@ -141,7 +141,7 @@ digraph test {
 }
 
 -- test --
-$g = GraphViz->new();
+$g = GraphViz->new(sort => 1);
 $g->add_node('London');
 $g->add_node('Paris');
 $g->add_edge('London' => 'Paris');
@@ -153,7 +153,7 @@ digraph test {
 }
 
 -- test --
-$g = GraphViz->new();
+$g = GraphViz->new(sort => 1);
 $g->add_node('London');
 $g->add_node('Paris');
 $g->add_edge('London' => 'Paris');
@@ -167,7 +167,7 @@ digraph test {
 }
 
 -- test --
-$g = GraphViz->new();
+$g = GraphViz->new(sort => 1);
 $g->add_node('London');
 $g->add_node('Paris');
 $g->add_edge('London' => 'London');
@@ -185,7 +185,7 @@ digraph test {
 }
 
 -- test --
-$g = GraphViz->new();
+$g = GraphViz->new(sort => 1);
 $g->add_node('London');
 $g->add_node('Paris', label => 'City of\nlurve');
 $g->add_node('New York');
@@ -205,7 +205,7 @@ digraph test {
 
 -- test --
 # Test clusters
-$g = GraphViz->new();
+$g = GraphViz->new(sort => 1);
 
 $g->add_node('London', cluster => 'Europe');
 $g->add_node('Paris', label => 'City of\nlurve', cluster => 'Europe');
@@ -228,7 +228,7 @@ digraph test {
 }
 
 -- test --
-$g = GraphViz->new({directed => 0});
+$g = GraphViz->new({directed => 0, sort => 1});
 
 foreach my $i (1..16) {
   my $used = 0;
@@ -271,7 +271,7 @@ graph test {
 }
 
 -- test --
-$g = GraphViz->new();
+$g = GraphViz->new(sort => 1);
 
 $g->add_node('London', label => ['Heathrow', 'Gatwick']);
 $g->add_node('Paris', label => 'CDG');
@@ -290,7 +290,7 @@ digraph test {
 }
 
 -- test --
-$g = GraphViz->new(width => 400, height => 400)
+$g = GraphViz->new(width => 400, height => 400, sort => 1)
 -- expect --
 digraph test {
 	size="400,400";
@@ -298,14 +298,14 @@ digraph test {
 }
 
 -- test --
-$g = GraphViz->new(concentrate => 1)
+$g = GraphViz->new(concentrate => 1, sort => 1)
 -- expect --
 digraph test {
 	concentrate=true;
 }
 
 -- test --
-$g = GraphViz->new(epsilon => 0.001, random_start => 1)
+$g = GraphViz->new(epsilon => 0.001, random_start => 1, sort => 1)
 -- expect --
 digraph test {
 	epsilon=0.001;
@@ -314,7 +314,7 @@ digraph test {
 
 -- test --
 # Test incremental buildup
-$g = GraphViz->new();
+$g = GraphViz->new(sort => 1);
 
 $g->add_node('London');
 $g->add_node('London', cluster => 'Europe');
@@ -343,7 +343,7 @@ digraph test {
 }
 
 -- test --
-$g = GraphViz->new(node => { shape => 'box' }, edge => { color => 'red' }, graph => { rotate => "90" });
+$g = GraphViz->new(node => { shape => 'box' }, edge => { color => 'red' }, graph => { rotate => "90" }, sort => 1);
 $g->add_node('London');
 $g->add_node('Paris', label => 'City of\nlurve');
 $g->add_node('New York');
@@ -363,4 +363,24 @@ digraph test {
 	London -> "New York" [label="Far"];
 	London -> Paris;
 	Paris -> London;
+}
+
+
+-- test --
+$g = GraphViz->new(sort => 1);
+$g->add_node('a');
+$g->add_node('b');
+$g->add_node('c');
+$g->add_node('d');
+$g->add_node('e');
+$g->add_node('f');
+
+-- expect --
+digraph test {
+	a [label="a"];
+	b [label="b"];
+	c [label="c"];
+	d [label="d"];
+	e [label="e"];
+	f [label="f"];
 }

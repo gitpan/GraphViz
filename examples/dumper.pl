@@ -14,8 +14,12 @@ my(@d);
 #@d = ([3, 1, 4, 1], 9, 9, 9);
 #@d = ([3, 1, 4, 1], "foo", \"bar", \3.141, [[3]]);
 #@d = ({ a => '3', b => '4'});
-@d = ("red", { a => [3, 1, 4, 1], b => { q => 'a', w => 'b'}}, "blue", undef, GraphViz::Data::Grapher->new(), 2);
+#@d = ("red", { a => [3, 1, 4, 1], b => { q => 'a', w => 'b'}}, "blue", undef, GraphViz::Data::Grapher->new(), 2);
+@d = ("red", { a => [3, 1, 4, 1], b => { q => 'a', w => 'b'}}, "blue", undef);
 
 my $graph = GraphViz::Data::Grapher->new(\@d);
 
 print $graph->as_png;
+
+use Data::Dumper;
+warn Dumper(\@d);

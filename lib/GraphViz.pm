@@ -9,7 +9,7 @@ use Math::Bezier;
 use IPC::Run qw(run);
 
 # This is incremented every time there is a change to the API
-$VERSION = '0.14';
+$VERSION = '1.0';
 
 
 =head1 NAME
@@ -100,6 +100,10 @@ Note that Marcel Grunauer has released some modules on CPAN to graph
 various other structures. See GraphViz::DBI and GraphViz::ISA for
 example.
 
+brian d foy has written an article about Devel::GraphVizProf for
+Dr. Dobb's Journal:
+http://www.ddj.com/columns/perl/2001/0104pl002/0104pl002.htm
+
 =head2 Award winning!
 
 I presented a paper and talk on "Graphing Perl" using GraphViz at the
@@ -172,6 +176,7 @@ sub new {
   }
 
   $self->{NODES} = {};
+  $self->{NODELIST} = [];
   $self->{EDGES} = [];
   $self->{GRAPH} = Graph::Directed->new();
 
@@ -191,6 +196,8 @@ sub new {
   $self->{RANDOM_START} = $config->{random_start} if (exists $config->{random_start});
 
   $self->{EPSILON} = $config->{epsilon} if (exists $config->{epsilon});
+
+  $self->{SORT} = $config->{sort} if (exists $config->{sort});
 
   # Global node, edge and graph attributes
   $self->{NODE_ATTRS} = $config->{node} if (exists $config->{node});
@@ -370,6 +377,12 @@ sub add_node {
   foreach my $key (keys %$node) {
     $self->{GRAPH}->set_attribute($key, $node->{name}, $node->{$key});
   }
+
+  # Add the node to the nodelist, which contains the names of
+  # all the nodes in the order that they were inserted (but only
+  # if it's not already there)
+  push @{$self->{NODELIST}}, $node->{name} unless
+    grep { $_ eq $node->{name} } @{$self->{NODELIST}};
 
   return $node->{name};
 }
@@ -820,7 +833,10 @@ sub _as_debug {
   my $arrow = $self->{DIRECTED} ? ' -> ' : ' -- ';
 
   # Add all the nodes
-  foreach my $name (sort keys %{$self->{NODES}}) {
+  my @nodelist = @{$self->{NODELIST}};
+  @nodelist = sort @nodelist if $self->{SORT};
+
+  foreach my $name (@nodelist) {
     my $node = $self->{NODES}->{$name};
 
     # Note all the clusters
