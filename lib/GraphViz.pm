@@ -10,7 +10,7 @@ use Math::Bezier;
 use IPC::Run qw(run binary);
 
 # This is incremented every time there is a change to the API
-$VERSION = '2.00';
+$VERSION = '2.01';
 
 =head1 NAME
 
@@ -408,7 +408,7 @@ sub add_node {
       $node->{label} = $node->{name};
     }
   } else {
-    $node->{label} =~ s#([|<>\[\]{}"])#\\$1#g;
+   $node->{label} =~ s#([|<>\[\]{}"])#\\$1#g unless $node->{shape} && $node->{shape} eq 'record';
   }
 
   delete $node->{cluster}
