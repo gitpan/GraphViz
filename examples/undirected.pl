@@ -1,17 +1,14 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 #
 # This is a simple example of constructing
 # undirected graphs. It shows factors, kinda ;-)
-#
 
 
 use strict;
 use lib '../lib';
 use GraphViz;
-use GraphViz::No;
-use GraphViz::Small;
 
-my $g = GraphViz::Small->new({directed => 0});
+my $g = GraphViz->new(directed => 0);
 
 foreach my $i (1..16) {
   my $used = 0;

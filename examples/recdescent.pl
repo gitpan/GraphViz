@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
 use strict;
 use lib '../lib';
@@ -65,7 +65,7 @@ q{
 
         QuantityUnit:
                 /lbs?/
-                
+
 
         Object:
                 ReferenceQualifier Ingredient
@@ -118,5 +118,4 @@ q{
 
 
 my $graph = GraphViz::Parse::RecDescent->new($recipegrammar);
-
 $graph->as_png("recdescent.png");

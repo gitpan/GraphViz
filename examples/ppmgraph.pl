@@ -4,6 +4,7 @@ use strict;
 
 use lib '../lib';
 use Getopt::Long;
+use LWP::Simple;
 use Pod::Usage;
 use GraphViz;
 use XML::XPath;
@@ -53,6 +54,7 @@ pod2usage(1) unless $opts{pkg};
 $opts{os}  ||= 'linux';
 $opts{pkg} =~ s/::/-/g;
 
+mirror("http://www.activestate.com/PPMPackages/5.6plus/package.lst", "package.lst") unless -f "package.lst";
 my $xp = XML::XPath->new(filename => 'package.lst');
 my $deps = process($xp, $opts{os}, {}, $opts{pkg});
 

@@ -1,9 +1,7 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 #
 # This is a simple idea which illustrates the use
 # of clusters to, well, cluster nodes together
-#
-
 
 use strict;
 use lib '../lib';

@@ -9,7 +9,7 @@ use Math::Bezier;
 use IPC::Run qw(run);
 
 # This is incremented every time there is a change to the API
-$VERSION = '1.1';
+$VERSION = '1.2';
 
 
 =head1 NAME

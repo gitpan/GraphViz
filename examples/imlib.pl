@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 #
 # This is an example of using the (so far undocumented) as_graph
 # method, which returns a Graph object. This can then be used to draw
@@ -8,8 +8,11 @@
 # undirected graphs, but it's a proof of concept so far...
 
 use strict;
+use lib '../lib';
 use GraphViz;
 use Image::Imlib2;
+
+my $font = 'maian';
 
 my $g = GraphViz->new();
 
@@ -44,7 +47,8 @@ my $graph = $g->as_graph;
 
 my($iw, $ih) = (162, 150);
 my $image = Image::Imlib2->new($iw, $ih);
-$image->load_font("arial/12");
+$image->add_font_path("./");
+$image->load_font("$font/12");
 
 $image->set_color(255, 127, 0, 255);
 
@@ -53,7 +57,7 @@ while (@edges > 0) {
   my ($from, $to) = splice(@edges, 0, 2);
   my %attributes = $graph->get_attributes($from, $to);
   my $bezier = $attributes{bezier};
-  print "doing edge $from -> $to...$bezier\n";
+#  warn "doing edge $from -> $to...$bezier\n";
   my @points = $bezier->curve(20);
 
   my ($oldx, $oldy) = splice(@points, 0, 2);
@@ -101,12 +105,10 @@ foreach my $v ($graph->vertices) {
   my $h = $attributes{h} * $ih;
   $w /= 2;
   $h /= 2;
-  print "doing $v...($x, $y, $w, $h)\n";
+#  warn "doing $v...($x, $y, $w, $h)\n";
 
 #  $image->fill_ellipse($x, $y, $w, $h);
   $image->draw_ellipse($x, $y, $w, $h);
-
-  my $font = 'arial';
 
   my $size = 4;
 
@@ -131,5 +133,3 @@ foreach my $v ($graph->vertices) {
 
 # save out
 $image->save('imlib.png');
-
-

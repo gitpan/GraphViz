@@ -1,4 +1,8 @@
 #!/usr/bin/perl -w
+#
+# This is an example of using GraphViz::Parse::Yapp
+# to graph a simple Yapp grammar (well, the Ruby grammar
+# converted to Parse::Yapp) 
 
 use strict;
 use lib '../lib';

@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 #
 # An example of visualising a regular expression using GraphViz::Regex
 

@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 #
 # This is a simple example for illustrating the
 # concepts of ports

@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 #
 # This is a simple example which provides an 
 # alternative way of displaying a data structure
@@ -21,5 +21,5 @@ my $graph = GraphViz::Data::Grapher->new(\@d);
 
 $graph->as_png("dumper.png");
 
-use Data::Dumper;
-warn Dumper(\@d);
+#use Data::Dumper;
+#warn Dumper(\@d);

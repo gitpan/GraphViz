@@ -134,7 +134,8 @@ sub _init {
 
 	# We could probably use a switch here ;-)
 	if ($type eq 'Subrule') {
-	  $text = $item->{subrule} . $item->{argcode};
+	  $text = $item->{subrule};
+	  $text .= $item->{argcode} if defined($item->{argcode});
 	} elsif ($type =~ /^(Literal|Token|InterpLit)$/) {
 	  # These are all literals
 	  $text = $item->{description};

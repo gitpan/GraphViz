@@ -145,15 +145,15 @@ END {
 #	    next unless $calls > 2;
 	    my $fromlabel = getlabel($file . $j);
 	    my $ratio = $ctime / $maxtime;
-	    $g->add_node({ name => $name, color => "0,1,$ratio" }) unless ($name =~ m|/| || $seenlabel{$name}++);
+	    $g->add_node("$file/$name", label => $name, color => "0,1,$ratio") unless ($name =~ m|/| || $seenlabel{"$file/$name"}++);
 	    my $fromtime = defined($DB::ctimes{$file}->[$j]) ?
 	      $DB::times{$file}->[$j] : 0;
 	    $ratio = $fromtime / $maxtime;
 	    my $fromname = getname($file, $j);
-	    $g->add_node({ name => $fromname, color => "0,1,$ratio" }) unless $seenlabel{$fromname}++;
+	    $g->add_node("$file/$fromname", label => $fromname, color => "0,1,$ratio") unless $seenlabel{"$file/$fromname"}++;
 	    my $ratio = $calls / $maxcalls; 
 	    my $w = 100 * (1 - $ratio);
-	    $g->add_edge({ from => $fromname, to => $name, color => "0,1,$ratio", w => $w, len => 2});
+	    $g->add_edge("$file/$fromname" => "$file/$name", color => "0,1,$ratio", w => $w, len => 2);
 	  }
 	}
       }
@@ -215,7 +215,7 @@ Devel::GraphVizProf - per-line Perl profiler (with graph output)
 =head1 SYNOPSIS
 
 	perl -d:GraphVizProf test.pl > test.dot
-        dotneato -Tpng test.dot > test.png
+        dot -Tpng test.dot > test.png
 
 =head1 DESCRIPTION
 
