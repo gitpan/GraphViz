@@ -7,7 +7,7 @@ use IPC::Run qw(run);
 use vars qw($AUTOLOAD);
 
 # This is incremented every time there is a change to the API
-$VERSION = '0.08';
+$VERSION = '0.09';
 
 
 =head1 NAME
@@ -42,11 +42,11 @@ GraphViz - Interface to the GraphViz graphing tool
 
 This modules provides an interface to layout and generate images of
 directed graphs in a variety of formats (PostScript, PNG, etc.) using
-the "dotneato" program from the GraphViz project
+the "dot" and "neato" programs from the GraphViz project
 (http://www.graphviz.org/).
 
 At the moment this is a fairly simple library. Some features of
-dotneato are not currently implemented, such as graph
+dot and neato are not currently implemented, such as graph
 attributes. Feature requests are welcome!
 
 =head1 METHODS
@@ -56,20 +56,31 @@ attributes. Feature requests are welcome!
 
 =head2 new
 
-This is the constructor. It currently takes no arguments:
+This is the constructor. It currently takes one attribute, 'directed',
+which defaults to 1 (true) - this specifies directed (tree-like)
+graphs. Setting this to zero produces undirected graphs, which are
+layed out differently.
 
   my $g = GraphViz->new();
+  my $g = GraphViz->new({directed => 0});
 
 =cut
 
 
 sub new {
   my $proto = shift;
+  my $config = shift;
   my $class = ref($proto) || $proto;
   my $self = {};
 
   $self->{NODES} = {};
   $self->{EDGES} = [];
+
+  if (exists $config->{directed}) {
+      $self->{DIRECTED} = $config->{directed};
+  } else {
+      $self->{DIRECTED} = 1; # default to directed
+  }
 
   bless($self, $class);
   return $self;
@@ -177,7 +188,7 @@ sub add_edge {
 
 =head2 as_canon, as_text, as_gif etc. methods
 
-There are a number of methods which generate input for dotneato or
+There are a number of methods which generate input for dot / neato or
 output the graph in a variety of formats.
 
 =over 4
@@ -204,7 +215,7 @@ as_* method does.
 
 =item as_text
 
-The as_text method returns text which is a layed-out dotneato-format file.
+The as_text method returns text which is a layed-out dot / neato-format file.
 
   print $g->as_text;
 
@@ -372,10 +383,14 @@ sub _as_debug {
 
   my $dot;
 
-  $dot .= "digraph test {\n";
+  my $graph_type = $self->{DIRECTED} ? 'digraph' : 'graph';
+  
+  $dot .= "$graph_type test {\n";
 
   my %clusters = ();
   my %clusters_edge = ();
+
+  my $arrow = $self->{DIRECTED} ? ' -> ' : ' -- ';
 
   foreach my $name (sort keys %{$self->{NODES}}) {
     my $node = $self->{NODES}->{$name};
@@ -411,9 +426,9 @@ sub _as_debug {
         && exists $self->{NODES}->{$to} && exists $self->{NODES}->{$to}->{cluster} &&
 	$self->{NODES}->{$from}->{cluster} eq $self->{NODES}->{$to}->{cluster}) {
 
-      $clusters_edge{$self->{NODES}->{$from}->{cluster}} .= "\t\t" . $from . " -> " . $to . _attributes($edge) . ";\n";
+      $clusters_edge{$self->{NODES}->{$from}->{cluster}} .= "\t\t" . $from . $arrow . $to . _attributes($edge) . ";\n";
     } else {
-      $dot .= "\t" . $from . " -> " . $to . _attributes($edge) . ";\n";
+      $dot .= "\t" . $from . $arrow . $to . _attributes($edge) . ";\n";
     }
   }
 
@@ -436,15 +451,16 @@ sub _as_debug {
 }
 
 
-# Call neato with the dotneato input text and any parameters
+# Call dot/neato with the input text and any parameters
 
 sub _as_generic {
   my $self = shift;
 
   my $dot = $self->_as_debug;
-
   my $out;
-  run ['dotneato', @_], \$dot, \$out;
+  my $program = $self->{DIRECTED} ? 'dot' : 'neato';
+
+  run [$program, @_], \$dot, \$out;
 
   return $out;
 }
@@ -504,7 +520,7 @@ Leon Brocard E<lt>F<acme@astray.com>E<gt>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2000, Leon Brocard
+Copyright (C) 2000-1, Leon Brocard
 
 This module is free software; you can redistribute it or modify it
 under the same terms as Perl itself.

@@ -1,6 +1,8 @@
 Changes
 Devel/GraphVizProf.pm
 GraphViz.pm
+GraphViz/No.pm
+GraphViz/Small.pm
 MANIFEST
 Makefile.PL
 README
@@ -16,9 +18,12 @@ examples/port.png
 examples/primes.dot
 examples/primes.pl
 examples/primes.png
+examples/primes.ps
 examples/tmon.dot
 examples/tmon.out
 examples/tmon.png
+examples/undirected.pl
+examples/undirected.png
 examples/xml.pl
 examples/xml.png
 examples/xref.pl

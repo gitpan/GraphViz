@@ -59,13 +59,13 @@ ok($g->as_canon, $expect_text); #4
 
 $expect_text = q|digraph test {
 	node [	label = "\N" ];
-	graph [bb= "0,0,162,134"];
-	node1 [label=London, pos="129,116", width="0.89", height="0.50"];
-	node2 [label="New York", pos="39,23", width="1.08", height="0.50"];
-	node3 [label="City of\nlurve", pos="129,23", width="0.92", height="0.62"];
-	node1 -> node3 [pos="e,123,45 124,98 122,86 122,70 123,55"];
-	node1 -> node2 [label=Far, pos="e,53,40 111,101 103,94 95,86 89,80 81,71 69,58 59,47", lp="105,72"];
-	node3 -> node1 [pos="s,134,98 135,89 136,75 136,59 135,45"];
+	graph [bb= "0,0,162,150"];
+	node1 [label=London, pos="129,124", width="0.89", height="0.50"];
+	node2 [label="New York", pos="39,31", width="1.08", height="0.50"];
+	node3 [label="City of\nlurve", pos="129,31", width="0.92", height="0.62"];
+	node1 -> node3 [pos="e,123,53 124,106 122,94 122,78 123,63"];
+	node1 -> node2 [label=Far, pos="e,53,48 111,109 103,102 95,94 89,88 81,79 69,66 59,55", lp="105,80"];
+	node3 -> node1 [pos="s,134,106 135,97 136,83 136,67 135,53"];
 }
 |;
 
