@@ -1,5 +1,9 @@
 Revision history for Perl module GraphViz.
 
+2.00 Wed Aug 25 16:30:53 BST 2004
+        - thanks to Ron Savage, patched to work under systems
+          which have an executable extension, such as Windows
+
 1.9 Tue Aug 24 15:30:31 BST 2004
 	- check for "dot" in the Makefile.PL instead of a test, as
 	  suggested by Autrijus Tang

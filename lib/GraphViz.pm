@@ -4,13 +4,13 @@ use strict;
 use vars qw($AUTOLOAD $VERSION);
 
 use Carp;
+use Config;
 use Graph::Directed;
 use Math::Bezier;
 use IPC::Run qw(run binary);
 
 # This is incremented every time there is a change to the API
-$VERSION = '1.9';
-
+$VERSION = '2.00';
 
 =head1 NAME
 
