@@ -1,13 +1,16 @@
 package GraphViz;
 
+use warnings;
 use strict;
-use vars qw($VERSION $name_counter);
+use vars qw($AUTOLOAD $VERSION);
+
 use Carp;
+use Graph::Directed;
+use Math::Bezier;
 use IPC::Run qw(run);
-use vars qw($AUTOLOAD);
 
 # This is incremented every time there is a change to the API
-$VERSION = '0.09';
+$VERSION = '0.10';
 
 
 =head1 NAME
@@ -20,19 +23,13 @@ GraphViz - Interface to the GraphViz graphing tool
 
   my $g = GraphViz->new();
 
-  $g->add_node({ name => 'London'});
-  $g->add_node({ name => 'Paris', label => 'City of\nlurve'});
-  $g->add_node({ name => 'New York'});
+  $g->add_node('London');
+  $g->add_node('Paris', label => 'City of\nlurve');
+  $g->add_node('New York');
 
-  $g->add_edge({ from => 'London',
-	           to => 'Paris',});
-
-  $g->add_edge({ from => 'London',
-	           to => 'New York',
-	        label => 'Far'});
-
-  $g->add_edge({ from => 'Paris',
-	           to => 'London',});
+  $g->add_edge('London' => 'Paris');
+  $g->add_edge('London' => 'New York', label => 'Far');
+  $g->add_edge('Paris' => 'London');
 
 
   print $g->as_png;
@@ -40,14 +37,59 @@ GraphViz - Interface to the GraphViz graphing tool
 
 =head1 DESCRIPTION
 
-This modules provides an interface to layout and generate images of
-directed graphs in a variety of formats (PostScript, PNG, etc.) using
-the "dot" and "neato" programs from the GraphViz project
-(http://www.graphviz.org/).
+This module provides an interface to layout and image generation of
+directed and undirected graphs in a variety of formats (PostScript,
+PNG, etc.) using the "dot" and "neato" programs from the GraphViz
+project (http://www.graphviz.org/).
 
-At the moment this is a fairly simple library. Some features of
-dot and neato are not currently implemented, such as graph
-attributes. Feature requests are welcome!
+=head2 What is a graph?
+
+A (undirected) graph is a collection of nodes linked together with
+edges.
+
+A directed graph is the same as a graph, but the edges have a
+direction.
+
+=head2 What is GraphViz?
+
+This module is an interface to the GraphViz toolset
+(http://www.graphviz.org/). The GraphViz tools provide automatic graph
+layout and drawing. This module simplifies the creation of graphs and
+hides some of the complexity of the GraphViz module.
+
+Laying out graphs in an aesthetically-pleasing way is a hard problem -
+there may be multiple ways to lay out the same graph, each with their
+own quirks. GraphViz luckily takes part of this hard problem and does
+a pretty good job in a couple of seconds for most graphs.
+
+=head2 Why should I use this module?
+
+Observation aids comprehension. That is a fancy way of expressing
+that popular faux-Chinese proverb: "a picture is worth a thousand
+words".
+
+Text is not always the best way to represent anything and everything
+to do with a computer programs. Pictures and images are easier to
+assimilate than text. The ability to show a particular thing
+graphically can aid a great deal in comprehending what that thing
+really represents.
+
+Diagrams are computationally efficient, because information can be
+indexed by location; they group related information in the same
+area. They also allow relations to be expressed between elements
+without labeling the elements.
+
+A friend of mine used this to his advantage when trying to remember
+important dates in computer history. Instead of sitting down and
+trying to remember everything, he printed over a hundred posters (each
+with a date and event) and plastered these throughout his house. His
+spatial memory is still so good that asked last week (more than a year
+since the experiment) when Lisp was invented, he replied that it was
+upstairs, around the corner from the toilet, so must have been around
+1958.
+
+Spreadsheets are also a wonderfully simple graphical representation of
+computational models.
 
 =head1 METHODS
 
@@ -62,7 +104,7 @@ graphs. Setting this to zero produces undirected graphs, which are
 layed out differently.
 
   my $g = GraphViz->new();
-  my $g = GraphViz->new({directed => 0});
+  my $g = GraphViz->new(directed => 0);
 
 =cut
 
@@ -73,8 +115,16 @@ sub new {
   my $class = ref($proto) || $proto;
   my $self = {};
 
+  # Cope with the old hashref format
+  if (ref($config) ne 'HASH') {
+    my %config;
+    %config = ($config, @_) if @_;
+    $config = \%config;
+  }
+
   $self->{NODES} = {};
   $self->{EDGES} = [];
+  $self->{GRAPH} = Graph::Directed->new();
 
   if (exists $config->{directed}) {
       $self->{DIRECTED} = $config->{directed};
@@ -89,29 +139,98 @@ sub new {
 
 =head2 add_node
 
-A graph consists of at least one node. This method creates a new node
-and assigns it attributes. Various attributes are possible: "name"
-suggests a name for the node (if you do not supply one, one is
-generated for you and returned), "label" provides a label for the node
-(the label defaults to the name if none is specified). See the "dot"
-manpage under "NODE ATTRIBUTES" for others.
+A graph consists of at least one node. All nodes have a name attached
+which uniquely represents that node.
 
-  $g->add_node({ name => 'Paris', label => 'City of\nlurve'});
-  $g->add_node({ name => 'Paris', label => ['A', 'B', 'C']});
+The add_node method creates a new node and optionally assigns it
+attributes.
+
+The simplest form is used when no attributes are required, in which
+the string represents the name of the node:
+
+  $g->add_node('Paris');
+
+Various attributes are possible: "label" provides a label for the node
+(the label defaults to the name if none is specified). The label can
+contain embedded newlines with '\n', as well as '\c', '\l', '\r' for
+center, left, and right justified lines:
+
+  $g->add_node('Paris', label => 'City of\nlurve');
+
+Note that multiple attributes can be specified. Other attributes
+include:
+
+=over 4
+
+=item height, width
+
+sets the minimum height or width
+
+=item shape
+
+sets the node shape. This can be one of: 'record', 'plaintext',
+'ellipse', 'circle', 'egg', 'triangle', 'box', 'diamond', 'trapezium',
+'parallelogram', 'house', 'hexagon', 'octagon'
+
+=item fontsize
+
+sets the label size in points
+
+=item fontname
+
+sets the label font family name
+
+=item color
+
+sets the outline colour, and the default fill colour if the 'style' is
+'filled' and 'fillcolor' is not specified
+
+A colour value may be "h,s,v" (hue, saturation, brightness) floating
+point numbers between 0 and 1, or an X11 color name such as 'white',
+'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan', or
+'burlywood'
+
+=item fillcolor
+
+sets the fill colour when the style is 'filled'. If not specified, the
+'fillcolor' when the 'style' is 'filled' defaults to be the same as
+the outline color
+
+=item style
+
+sets the style of the node. Can be one of: 'filled', 'solid',
+'dashed', 'dotted', 'bold', 'invis'
+
+=item URL
+
+sets the url for the node in image map and PostScript files. The
+string '\N' value will be replaced by the node name. In PostScript
+files, URL information is embedded in such a way that Acrobat
+Distiller creates PDF files with active hyperlinks
+
+=back
+
+If you wish to add an anonymous node, that is a node for which you do
+not wish to generate a name, you may use the following form, where the
+GraphViz module generates a name and returns it for you. You may then
+use this name later on to refer to this node:
+
+  my $nodename = $g->add_node('label' => 'Roman city');
 
 Nodes can be clustered together with the "cluster" attribute, which is
 drawn by having a labelled rectangle around all the nodes in a
 cluster.
 
-  $g->add_node({ name => 'London', cluster => 'Europe'});
-  $g->add_node({ name => 'Amsterdam', cluster => 'Europe'});
+  $g->add_node('London', cluster => 'Europe');
+  $g->add_node('Amsterdam', cluster => 'Europe');
 
 Also, nodes can consist of multiple parts (known as ports). This is
 implemented by passing an array reference as the label, and the parts
 are displayed as a label. GraphViz has a much more complete port
-system, this is just a simple interface to it.
+system, this is just a simple interface to it. See the 'from_port' and
+'to_port' attributes of add_edge:
 
-  $g->add_node({ name => 'London', label => ['Heathrow', 'Gatwick']});
+  $g->add_node('London', label => ['Heathrow', 'Gatwick']);
 
 =cut
 
@@ -119,24 +238,51 @@ sub add_node {
   my $self = shift;
   my $node = shift;
 
+  # Cope with the new simple notation
+  if (ref($node) ne 'HASH') {
+    my $name = $node;
+    my %node;
+    if (@_ % 2 == 1) {
+      # No name passed
+      %node = ($name, @_);
+    } else {
+      # Name passed
+      %node = (@_, name => $name);
+    }
+    $node = \%node;
+  }
+
+  $self->add_node_munge($node) if $self->can('add_node_munge');
+
+  # The _code attribute is our internal name for the node
+  $node->{_code} = $self->_quote_name($node->{name});
+
   if (not exists $node->{name}) {
-    $node->{name} = 'node' . ++$name_counter;
+    $node->{name} = $node->{_code};
   }
 
   if (not exists $node->{label}) {
     $node->{label} = $node->{name};
   }
 
+  $node->{_label} =  $node->{label};
+
   # Deal with ports
   if (ref($node->{label}) eq 'ARRAY') {
     $node->{shape} = 'record'; # force a record
     my $nports = 0;
     $node->{label} = join '|', map
-      { '<port' . $nports++ . '>' . $_ }
+      { $_ =~ s#([|<>\[\]{}"])#\\$1#g; '<port' . $nports++ . '>' . $_ }
       (@{$node->{label}});
   }
 
-  $self->{NODES}->{$node->{name}} = $node;
+  $self->{NODES}->{$node->{name}} = $node; # should remove!
+  $self->{CODES}->{$node->{_code}} = $node->{name};
+  $self->{GRAPH}->add_vertex($node->{name});
+
+  foreach my $key (keys %$node) {
+    $self->{GRAPH}->set_attribute($key, $node->{name}, $node->{$key});
+  }
 
   return $node->{name};
 }
@@ -144,47 +290,143 @@ sub add_node {
 
 =head2 add_edge
 
-Edges are directed links between nodes. This method creates a new edge
-between two nodes and optionally assigns it attributes. Two mandatory
-parameters are 'from' and 'to', which indicate the node names that the
-edge connects. Optional attributes such as 'label' are also available
-(see the "dot" manpage under the "EDGE ATTRIBUTES" for others).
+Edges are directed (or undirected) links between nodes. This method
+creates a new edge between two nodes and optionally assigns it
+attributes.
 
-  $g->add_edge({ from => 'London',
-	           to => 'New York',
-	        label => 'Far'});
+The simplest form is when now attributes are required, in which case
+the nodes from and to which the edge should be are specified. This
+works well visually in the program code:
 
-Adding edges between ports of a node is done via the 'from_port' and
-'to_port' parameters, which currently takes in the offset of the port
-(ie 0, 1, 2...).
+  $g->add_edge('London' => 'Paris');
 
-  $g->add_edge({      from => 'London',
-                 from_port => 0,
-                        to => 'Paris',
-  });
+Attributes such as 'label' can also be used. This specifies a label
+for the edge.  The label can contain embedded newlines with '\n', as
+well as '\c', '\l', '\r' for center, left, and right justified lines.
+
+  $g->add_edge('London' => 'New York', label => 'Far');
+
+Note that multiple attributes can be specified. Other attributes
+include:
+
+=over 4
+
+=item minlen
+
+sets an integer factor that applies to the edge length (ranks for
+normal edges, or minimum node separation for flat edges)
+
+=item weight
+
+sets the integer cost of the edge. Values greater than 1 tend to
+shorten the edge. Weight 0 flat edges are ignored for ordering
+nodes
+
+=item fontsize
+
+sets the label type size in points
+
+=item fontname
+
+sets the label font family name
+
+=item fontcolor
+
+sets the label text colour
+
+=item color
+
+sets the line colour for the edge
+
+A colour value may be "h,s,v" (hue, saturation, brightness) floating
+point numbers between 0 and 1, or an X11 color name such as 'white',
+'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan', or
+'burlywood'
+
+=item style
+
+sets the style of the node. Can be one of: 'filled', 'solid',
+'dashed', 'dotted', 'bold', 'invis'
+
+
+=item dir
+
+sets the arrow direction. Can be one of: 'forward', 'back', 'both',  'none'
+
+=item tailclip, headclip
+
+when set to false disables endpoint shape clipping
+
+=item arrowhead, arrowtail
+
+sets the type for the arrow head or tail. Can be one of: 'none',
+'normal', 'inv', 'dot', 'odot', 'invdot', 'invodot.'
+
+=item arrowsize
+
+sets the arrow size: (norm_length=10,norm_width=5,
+inv_length=6,inv_width=7,dot_radius=2)
+
+=item headlabel, taillabel
+
+sets the text for port labels. Note that labelfontcolor,
+labelfontname, labelfontsize are also allowed
+
+=item labeldistance, port_label_distance
+
+sets the distance from the edge / port to the label. Also labelangle
+
+=item decorateP
+
+if set, draws a line from the edge to the label
+
+=item samehead, sametail
+
+if set aim edges having the same value to the same port, using the
+average landing point
+
+=item constraint
+
+if set to false causes an edge to be ignored for rank assignment
+
+=back
+
+Additionally, adding edges between ports of a node is done via the
+'from_port' and 'to_port' parameters, which currently takes in the
+offset of the port (ie 0, 1, 2...).
+
+  $g->add_edge('London' => 'Paris', from_port => 0);
 
 =cut
 
 sub add_edge {
   my $self = shift;
-  my $node = shift;
+  my $edge = shift;
 
-  if (not exists $node->{from} or not exists $node->{to}) {
+  # Also cope with simple $from => $to
+  if (ref($edge) ne 'HASH') {
+    my $from = $edge;
+    my %edge = (from => $from, to => shift, @_);
+    $edge = \%edge;
+  }
+
+  $self->add_edge_munge($edge) if $self->can('add_edge_munge');
+
+  if (not exists $edge->{from} or not exists $edge->{to}) {
     carp("GraphViz add_edge: 'from' or 'to' parameter missing!");
     return;
   }
 
-#  if (not exists $self->{NODES}->{$node->{from}}) {
-#    warn "From node $node->{from} doesn't exist!";
-#  }
+  push @{$self->{EDGES}}, $edge; # should remove!
 
-#  if (not exists $self->{NODES}->{$node->{to}}) {
-#    warn "To node $node->{to} doesn't exist!";
-#  }
+  $self->{GRAPH}->add_edge($edge->{from} => $edge->{to});
 
-  push @{$self->{EDGES}}, $node;
+  foreach my $key (keys %$edge) {
+    $self->{GRAPH}->set_attribute($key, $edge->{from}, $edge->{to}, $edge->{$key});
+  }
+
 }
-  
+
 
 =head2 as_canon, as_text, as_gif etc. methods
 
@@ -358,7 +600,7 @@ sub AUTOLOAD {
   my $self = shift;
   my $type = ref($self)
     or croak "$self is not an object";
-  
+
   my $name = $AUTOLOAD;
   $name =~ s/.*://;   # strip fully-qualified portion
 
@@ -371,20 +613,85 @@ sub AUTOLOAD {
   if ($name =~ /^as_(ps|hpgl|pcl|mif|pic|gd|gd2|gif|jpeg|png|wbmp|ismap|imap|vrml|vtx|mp|fig|svg|dot|canon|plain)$/) {
     return $self->_as_generic('-T' . $1);
   }
-  
+
   croak "Method $name not defined!";
 }
 
 
-# Generate the actual dot text
+# Undocumented feature: return a Graph object
+sub as_graph {
+  my($self, $conf) = @_;
+  my $graph = $self->{GRAPH};
 
+  return $self->_parse_dot($self->_as_debug);
+}
+
+
+sub _parse_dot {
+  my($self, $dot) = @_;
+  my $graph = $self->{GRAPH};
+
+  my $out;
+  my $program = $self->{DIRECTED} ? 'dot' : 'neato';
+
+  run [$program, '-Tplain'], \$dot, \$out;
+
+  my($aspect, $bbw, $bbh);
+
+  foreach my $line (split /\n/, $out) {
+#    print "# $line\n";
+
+    my($type, @values) = split /\s+/, $line;
+    if ($type eq 'graph') {
+      ($aspect, $bbw, $bbh) = @values;
+    } elsif ($type eq 'node') {
+      my($node, $x, $y, $w, $h) = @values;
+      $x /= $bbw;
+      $y /= $bbh;
+      $w /= $bbw;
+      $h /= $bbh;
+      $node = $self->{CODES}->{$node};
+#      print "#  $node  ($x, $y) x ($w, $h)\n";
+      $graph->set_attribute('x', $node, $x);
+      $graph->set_attribute('y', $node, $y);
+      $graph->set_attribute('w', $node, $w);
+      $graph->set_attribute('h', $node, $h);
+    } elsif ($type eq 'edge') {
+      my($from, $to, $n, @points) = @values;
+
+      $from = $self->{CODES}->{$from};
+        $to = $self->{CODES}->{$to};
+
+      @points = splice(@points, 0, $n * 2);
+
+      my @newpoints;
+
+      while (@points) {
+	my ($x, $y) = splice(@points, 0, 2);
+	$x /= $bbw;
+	$y /= $bbh;
+	push @newpoints, $x, $y;
+      }
+
+      my $bezier = Math::Bezier->new(@newpoints);
+#      print "#  $from->$to: @newpoints\n";
+      $graph->set_attribute('bezier', $from, $to, $bezier);
+    }
+#    next unless $type eq 'node';
+  }
+
+  return $graph;
+}
+
+
+# Return the main dot text
 sub _as_debug {
   my $self = shift;
 
   my $dot;
 
   my $graph_type = $self->{DIRECTED} ? 'digraph' : 'graph';
-  
+
   $dot .= "$graph_type test {\n";
 
   my %clusters = ();
@@ -392,34 +699,31 @@ sub _as_debug {
 
   my $arrow = $self->{DIRECTED} ? ' -> ' : ' -- ';
 
+  # Add all the nodes
   foreach my $name (sort keys %{$self->{NODES}}) {
     my $node = $self->{NODES}->{$name};
 
+    # Note all the clusters
     if (exists $node->{cluster}) {
       push @{$clusters{$node->{cluster}}}, $name;
-#      $dot .= "# cluster $node->{cluster} $name\n";
-#      delete $node->{cluster};
       next;
     }
 
-    $name = _quote_name($name);
-
-    $dot .= "\t$name" . _attributes($node) . ";\n";
+    $dot .= "\t" . $node->{_code} . _attributes($node) . ";\n";
   }
 
-  foreach my $edge (sort @{$self->{EDGES}}) {
+  # Add all the edges
+  foreach my $edge (sort { $a->{from} cmp $b->{from} || $a->{to} cmp $b->{to} } @{$self->{EDGES}}) {
 
-    my $from =  _quote_name($edge->{from});
-    my   $to =  _quote_name($edge->{to});
+    my $from = $self->{NODES}->{$edge->{from}}->{_code};
+    my $to = $self->{NODES}->{$edge->{to}}->{_code};
 
     # Deal with ports
     if (exists $edge->{from_port}) {
       $from = '"' . $from . '"' . ':port' . $edge->{from_port};
-#      delete $edge->{from_port};
     }
     if (exists $edge->{to_port}) {
       $to = '"' . $to . '"' . ':port' . $edge->{to_port};
-#      delete $edge->{to_port};
     }
 
     if (exists $self->{NODES}->{$from} && exists $self->{NODES}->{$from}->{cluster}
@@ -437,10 +741,9 @@ sub _as_debug {
     $label =~ s/^\s\[//;
     $label =~ s/\]$//;
 
-    $dot .= "\tsubgraph cluster_" . _quote_name($cluster) . " {\n";
+    $dot .= "\tsubgraph cluster_" . $self->_quote_name($cluster) . " {\n";
     $dot .= "\t\t$label;\n";
-#    $dot .= "\t\tnode [style=filled];\n";
-    $dot .= join "", map { "\t\t" . _quote_name($_) . _attributes($self->{NODES}->{$_}) . ";\n"; } (@{$clusters{$cluster}});
+    $dot .= join "", map { "\t\t" . $self->{NODES}->{$_}->{_code} . _attributes($self->{NODES}->{$_}) . ";\n"; } (@{$clusters{$cluster}});
     $dot .= $clusters_edge{$cluster} if exists $clusters_edge{$cluster};
     $dot .= "\t}\n";
   }
@@ -468,19 +771,18 @@ sub _as_generic {
 
 # Quote a node/edge name using dotneato's quoting rules
 
-my %_quote_name_cache;
-
 sub _quote_name {
-  my $name = shift;
+  my($self, $name) = @_;
   my $realname = $name;
 
-  return $_quote_name_cache{$name} if exists $_quote_name_cache{$name};
+  return $self->{_QUOTE_NAME_CACHE}->{$name} if exists $self->{_QUOTE_NAME_CACHE}->{$name};
 
-  if ($name !~ /^[a-z]+$/) {
+  if (!defined($name) || $name !~ /^[a-z]+$/) {
     # name contains weird characters - let's make up a name for it
-    $name = 'node' . ++$name_counter;
+    $name = 'node' . ++$self->{_NAME_COUNTER};
   }
-  $_quote_name_cache{$realname} = $name;
+
+  $self->{_QUOTE_NAME_CACHE}->{$realname} = $name if defined $realname;
 
 #  warn "# $realname -> $name\n";
 
@@ -497,12 +799,13 @@ sub _attributes {
   my @attributes;
 
   foreach my $key (keys %$thing) {
-    next if $key eq 'to' or $key eq 'from' or $key eq 'name' or $key
-    eq 'cluster' or $key eq 'from_port' or $key eq 'to_port';
+    next if $key =~ /^_/;
+    next if $key =~ /^(to|from|name|cluster|from_port|to_port)$/;
 
     my $value = $thing->{$key};
     $value = '"' . $value . '"';
     $value =~ s|\n|\\n|g;
+
     $value = '""' if not defined $value;
     push @attributes, "$key=$value";
   }
@@ -513,6 +816,14 @@ sub _attributes {
     return "";
   }
 }
+
+
+=head1 NOTES
+
+Older versions of GraphViz used a slightly different syntax for node
+and edge adding (with hash references). The new format is slightly
+clearer, although for the moment we support both. Use the new, clear
+syntax, please.
 
 =head1 AUTHOR
 

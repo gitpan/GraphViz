@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 =head1 NAME
 
@@ -90,8 +90,8 @@ while (defined(my $line = <$fh>)) {
 
 #warn "# $subroutine ($subcluster) -> $name ($namecluster)\n";
 
-  my $subnode = $g->add_node({ name => $subroutine, cluster => $subcluster });
-  my $namenode = $g->add_node({ name => $name, cluster => $namecluster });
+  my $subnode = $g->add_node($subroutine, cluster => $subcluster);
+  my $namenode = $g->add_node($name, cluster => $namecluster);
 
   next if !$multiple_edges && $edges{$subnode}->{$namenode}++;
 
@@ -99,9 +99,11 @@ while (defined(my $line = <$fh>)) {
 	         to => $namenode,
 	     };
 
-  $edge->{label} = $line if $show_lines;
-
-  $g->add_edge($edge);
+  if ($show_lines) {
+    $g->add_edge($subnode => $namenode, label => $line);
+  } else {
+    $g->add_edge($subnode => $namenode);
+  }
 }
 
 print $g->as_png;

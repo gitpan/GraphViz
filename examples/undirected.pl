@@ -8,19 +8,21 @@
 use strict;
 use lib '..';
 use GraphViz;
+use GraphViz::No;
+use GraphViz::Small;
 
-my $g = GraphViz->new({directed => 0});
+my $g = GraphViz::Small->new({directed => 0});
 
 foreach my $i (1..16) {
   my $used = 0;
   $used = 1 if $i >= 2 and $i <= 4;
   foreach my $j (2..4) {
     if ($i != $j && $i % $j == 0) {
-      $g->add_edge({from => $i, to => $j});
+      $g->add_edge($i => $j);
       $used = 1;
     }
   }
-  $g->add_node({ name => $i}) if $used;
+  $g->add_node($i) if $used;
 }
 
 #print $g->_as_debug;

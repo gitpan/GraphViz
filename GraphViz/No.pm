@@ -32,7 +32,7 @@ As for GraphViz.
 
 =cut
 
-sub add_node {
+sub add_node_munge {
   my $self = shift;
   my $node = shift;
 
@@ -40,16 +40,13 @@ sub add_node {
   $node->{height} = 0;
   $node->{width} = 0;
   $node->{style} = 'invis';
-
-  $self->SUPER::add_node($node);
 }
 
-sub add_edge {
+sub add_edge_munge {
   my $self = shift;
   my $edge = shift;
 
   $edge->{color} = rand() . "," . "1,1";
-  $self->SUPER::add_edge($edge);
 }
 
 =head1 AUTHOR

@@ -9,19 +9,13 @@ use GraphViz;
 
 my $g = GraphViz->new();
 
-$g->add_node({ name => 'London', label => ['Heathrow', 'Gatwick']});
-$g->add_node({ name => 'Paris', label => 'CDG'});
-$g->add_node({ name => 'New York', label => 'JFK'});
+$g->add_node('London', label => ['Heathrow', 'Gatwick']);
+$g->add_node('Paris', label => 'CDG');
+$g->add_node('New York', label => 'JFK');
 
-$g->add_edge({      from => 'London',
-	       from_port => 0,
-                      to => 'Paris',
-});
+$g->add_edge('London' => 'Paris', from_port => 0);
 
-$g->add_edge({    from => 'New York',
-                    to => 'London',
-	       to_port => 1,
-});
+$g->add_edge('New York' => 'London', to_port => 1);
 
 #print $g->_as_debug;
 #print $g->as_text;

@@ -11,19 +11,13 @@ use GraphViz;
 
 my $g = GraphViz->new();
 
-$g->add_node({ name => 'London', cluster => 'Europe'});
-$g->add_node({ name => 'Paris', label => 'City of\nlurve', cluster => 'Europe'});
-$g->add_node({ name => 'New York'});
+$g->add_node('London', cluster => 'Europe');
+$g->add_node('Paris', label => 'City of\nlurve', cluster => 'Europe');
+$g->add_node('New York');
 
-$g->add_edge({ from => 'London',
-                   to => 'Paris',});
-
-$g->add_edge({ from => 'London',
-                   to => 'New York',
-                label => 'Far'});
-
-$g->add_edge({ from => 'Paris',
-                   to => 'London',});
+$g->add_edge('London' => 'Paris');
+$g->add_edge('London' => 'New York', label => 'Far');
+$g->add_edge('Paris' => 'London');
 
 #print $g->_as_debug;
 #print $g->as_text;

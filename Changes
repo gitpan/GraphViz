@@ -1,5 +1,23 @@
 Revision history for Perl module GraphViz.
 
+0.10 Mon Mar  5 17:32:14 GMT 2001
+	- now allow simple add_edge({$from => $to}) syntax
+	  (idea by DJ Adams and Brian Ingerson)
+	- much better documentation (especially on attributes)
+	- new module Parse::RecDescent::GraphViz (and example) for
+	  graphing Parse::RecDescent grammars (idea by Damian Conway)
+	- new module XML::GraphViz (and example) for graphing XML
+	- new module Data::GraphViz (and example) for graphing data
+	  structures
+	- new example ppmgraph.pl by Marcel Grunauer which graphs CPAN
+	  tarball dependencies using ActiveState's package list (thanks
+	  to Brian Ingerson too ;-)
+	- new, better, testsuite
+	- better quoting (especially in ports) to allow a greater range	
+	  of characters
+	- new undocumented (it may change) as_graph method, which
+	  returns a graph object with the coordinates of nodes and edges
+
 0.09 Fri Jan 12 15:50:17 GMT 2001
 	- moved back to "dot" and "neato" from "dotneato"
 	- now allow directed and undirected graphs
