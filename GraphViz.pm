@@ -7,7 +7,7 @@ use IPC::Run qw(run);
 use vars qw($AUTOLOAD);
 
 # This is incremented every time there is a change to the API
-$VERSION = '0.06';
+$VERSION = '0.07';
 
 
 =head1 NAME
@@ -86,6 +86,21 @@ generated for you and returned), "label" provides a label for the node
 manpage under "NODE ATTRIBUTES" for others.
 
   $g->add_node({ name => 'Paris', label => 'City of\nlurve'});
+  $g->add_node({ name => 'Paris', label => ['A', 'B', 'C']});
+
+Nodes can be clustered together with the "cluster" attribute, which is
+drawn by having a labelled rectangle around all the nodes in a
+cluster.
+
+  $g->add_node({ name => 'London', cluster => 'Europe'});
+  $g->add_node({ name => 'Amsterdam', cluster => 'Europe'});
+
+Also, nodes can consist of multiple parts (known as ports). This is
+implemented by passing an array reference as the label, and the parts
+are displayed as a label. GraphViz has a much more complete port
+system, this is just a simple interface to it.
+
+  $g->add_node({ name => 'London', label => ['Heathrow', 'Gatwick']});
 
 =cut
 
@@ -99,6 +114,15 @@ sub add_node {
 
   if (not exists $node->{label}) {
     $node->{label} = $node->{name};
+  }
+
+  # Deal with ports
+  if (ref($node->{label}) eq 'ARRAY') {
+    $node->{shape} = 'record'; # force a record
+    my $nports = 0;
+    $node->{label} = join '|', map
+      { '<port' . $nports++ . '>' . $_ }
+      (@{$node->{label}});
   }
 
   $self->{NODES}->{$node->{name}} = $node;
@@ -118,6 +142,15 @@ edge connects. Optional attributes such as 'label' are also available
   $g->add_edge({ from => 'London',
 	           to => 'New York',
 	        label => 'Far'});
+
+Adding edges between ports of a node is done via the 'from_port' and
+'to_port' parameters, which currently takes in the offset of the port
+(ie 0, 1, 2...).
+
+  $g->add_edge({      from => 'London',
+                 from_port => 0,
+                        to => 'Paris',
+  });
 
 =cut
 
@@ -339,14 +372,60 @@ sub _as_debug {
 
   $dot .= "digraph test {\n";
 
-  foreach my $edge (@{$self->{EDGES}}) {
-    $dot .= "\t" . _quote_name($edge->{from}) . " -> " . _quote_name($edge->{to}) . _attributes($edge) . ";\n";
-  }
+  my %clusters = ();
+  my %clusters_edge = ();
 
   foreach my $name (sort keys %{$self->{NODES}}) {
     my $node = $self->{NODES}->{$name};
+
+    if (exists $node->{cluster}) {
+      push @{$clusters{$node->{cluster}}}, $name;
+#      $dot .= "# cluster $node->{cluster} $name\n";
+#      delete $node->{cluster};
+      next;
+    }
+
     $name = _quote_name($name);
+
     $dot .= "\t$name" . _attributes($node) . ";\n";
+  }
+
+  foreach my $edge (sort @{$self->{EDGES}}) {
+
+    my $from =  _quote_name($edge->{from});
+    my   $to =  _quote_name($edge->{to});
+
+    # Deal with ports
+    if (exists $edge->{from_port}) {
+      $from = '"' . $from . '"' . ':port' . $edge->{from_port};
+#      delete $edge->{from_port};
+    }
+    if (exists $edge->{to_port}) {
+      $to = '"' . $to . '"' . ':port' . $edge->{to_port};
+#      delete $edge->{to_port};
+    }
+
+    if (exists $self->{NODES}->{$from} && exists $self->{NODES}->{$from}->{cluster}
+        && exists $self->{NODES}->{$to} && exists $self->{NODES}->{$to}->{cluster} &&
+	$self->{NODES}->{$from}->{cluster} eq $self->{NODES}->{$to}->{cluster}) {
+
+      $clusters_edge{$self->{NODES}->{$from}->{cluster}} .= "\t\t" . $from . " -> " . $to . _attributes($edge) . ";\n";
+    } else {
+      $dot .= "\t" . $from . " -> " . $to . _attributes($edge) . ";\n";
+    }
+  }
+
+  foreach my $cluster (sort keys %clusters) {
+    my $label = _attributes({ label => $cluster});
+    $label =~ s/^\s\[//;
+    $label =~ s/\]$//;
+
+    $dot .= "\tsubgraph cluster_" . _quote_name($cluster) . " {\n";
+    $dot .= "\t\t$label;\n";
+#    $dot .= "\t\tnode [style=filled];\n";
+    $dot .= join "", map { "\t\t" . _quote_name($_) . _attributes($self->{NODES}->{$_}) . ";\n"; } (@{$clusters{$cluster}});
+    $dot .= $clusters_edge{$cluster} if exists $clusters_edge{$cluster};
+    $dot .= "\t}\n";
   }
 
   $dot .= "}\n";
@@ -379,11 +458,14 @@ sub _quote_name {
 
   return $_quote_name_cache{$name} if exists $_quote_name_cache{$name};
 
-  if ($name !~ /^[a-z]+$/i) {
+  if ($name !~ /^[a-z]+$/) {
     # name contains weird characters - let's make up a name for it
     $name = 'node' . ++$name_counter;
   }
   $_quote_name_cache{$realname} = $name;
+
+#  warn "# $realname -> $name\n";
+
   return $name;
 }
 
@@ -397,7 +479,9 @@ sub _attributes {
   my @attributes;
 
   foreach my $key (keys %$thing) {
-    next if $key eq 'to' or $key eq 'from' or $key eq 'name';
+    next if $key eq 'to' or $key eq 'from' or $key eq 'name' or $key
+    eq 'cluster' or $key eq 'from_port' or $key eq 'to_port';
+
     my $value = $thing->{$key};
     $value = '"' . $value . '"';
     $value =~ s|\n|\\n|g;

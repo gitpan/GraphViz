@@ -61,7 +61,6 @@ use lib '..';
 use GraphViz;
 use IO::File;
 
-my $multiple_packages = 0;
 my $multiple_edges = 0;
 my $show_lines = 0;
 
@@ -79,16 +78,20 @@ while (defined(my $line = <$fh>)) {
   next if $file =~ /\//;
   next unless $proto =~ /&/;
   next if $subroutine eq '(definitions)';
-  warn "$file $subroutine $package $proto $name $type\n";
+#  warn "$file $subroutine $package $proto $name $type\n";
 
-  if ($multiple_packages) {
-    $name = $package . '::' . $name;
-  } else {
-    $subroutine =~ s|^.*::||;
-  }
+#warn "$subroutine -> $package $name\n";
 
-  my $subnode = $g->add_node({ name => $subroutine });
-  my $namenode = $g->add_node({ name => $name });
+  my $subcluster = $subroutine;
+  $subcluster =~ s|::.*?$||;
+  $subroutine =~ s|^.*::||;
+
+  my $namecluster = $package;
+
+#warn "# $subroutine ($subcluster) -> $name ($namecluster)\n";
+
+  my $subnode = $g->add_node({ name => $subroutine, cluster => $subcluster });
+  my $namenode = $g->add_node({ name => $name, cluster => $namecluster });
 
   next if !$multiple_edges && $edges{$subnode}->{$namenode}++;
 
@@ -102,3 +105,5 @@ while (defined(my $line = <$fh>)) {
 }
 
 print $g->as_png;
+#print $g->_as_debug;
+#print $g->as_text;
