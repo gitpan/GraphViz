@@ -1,5 +1,12 @@
 Revision history for Perl module GraphViz.
 
+2.02 Fri Jan  7 18:51:06 GMT 2005
+	- remove dependencies on Graph and Math::Bezier
+	- make GraphViz HTML-Like labels work (spotted by Patrice Dehais)
+	- updated (including much documentation) to support newer additions
+	  to the dot language (by Max Baker)
+	- new test which tests the POD
+
 2.01 Fri Sep 24 17:02:29 BST 2004
         - no longer *always* quote the label in add_node() in order to 
           let GraphViz::Data::Structure work again (sorry)

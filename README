@@ -19,8 +19,8 @@ SYNOPSIS
 DESCRIPTION
     This module provides an interface to layout and image generation of
     directed and undirected graphs in a variety of formats (PostScript, PNG,
-    etc.) using the "dot", "neato" and "twopi" programs from the GraphViz
-    project (http://www.graphviz.org/ or
+    etc.) using the "dot", "neato", "twopi", "circo" and "fdp" programs from
+    the GraphViz project (http://www.graphviz.org/ or
     http://www.research.att.com/sw/tools/graphviz/).
 
   What is a graph?
@@ -92,68 +92,173 @@ METHODS
   new
     This is the constructor. It accepts several attributes.
 
-    The most two important attributes are 'layout' and 'directed'. The
-    'layout' attribute determines which layout algorithm GraphViz.pm will
-    use. Possible values are: 'dot' (the default GraphViz layout for
-    directed graph layouts), 'neato' (for undirected graph layouts - spring
-    model) or 'twopi' (for undirected graph layouts - circular).
-
-    The 'directed' attribute, which defaults to 1 (true) specifies directed
-    (edges have arrows) graphs. Setting this to zero produces undirected
-    graphs (edges do not have arrows).
-
-    Another attribute 'rankdir' controls the direction the nodes are linked
-    together. If true it will do left->right linking rather than the default
-    up-down linking.
-
-    The 'width' and 'height' attributes control the size of the bounding box
-    of the drawing in inches. This is more useful for PostScript output as
-    for raster graphic (such as PNG) the pixel dimensions can not be set,
-    although there are generally 96 pixels per inch.
-
-    The 'pagewidth' and 'pageheight' attributes set the PostScript
-    pagination size in inches. That is, if the image is larger than the page
-    then the resulting PostScript image is a sequence of pages that can be
-    tiled or assembled into a mosaic of the full image. (This only works for
-    PostScript output).
-
       my $g = GraphViz->new();
       my $g = GraphViz->new(directed => 0);
-      my $g = GraphViz->new(layout => 'neato');
+      my $g = GraphViz->new(layout => 'neato', ratio => 'compress');
       my $g = GraphViz->new(rankdir  => 1);
       my $g = GraphViz->new(width => 8.5, height => 11);
       my $g = GraphViz->new(width => 30, height => 20,
                             pagewidth => 8.5, pageheight => 11);
 
-    The 'concentrate' attribute controls enables an edge merging technique
-    to reduce clutter in dense layouts of directed graphs. The default is
-    not to merge edges.
+    The most two important attributes are 'layout' and 'directed'.
 
-    For undirected graphs, the 'random_start' attribute requests an initial
-    random placement for the graph, which may give a better result. The
-    default is not random.
+    layout
+        The 'layout' attribute determines which layout algorithm GraphViz.pm
+        will use. Possible values are:
 
-    For undirected graphs, the 'epsilon' attribute decides how long the
-    graph solver tries before finding a graph layout. Lower numbers allow
-    the solver to fun longer and potentially give a better layout. Larger
-    values can decrease the running time but with a reduction in layout
-    quality. The default is 0.1.
+        dot The default GraphViz layout for directed graph layouts
 
-    The 'no_overlap' overlap option, if set, tells the graph solver to not
-    overlap the nodes.
+        neato
+            For undirected graph layouts - spring model
 
-    The 'bgcolor' option sets the background colour. A colour value may be
-    "h,s,v" (hue, saturation, brightness) floating point numbers between 0
-    and 1, or an X11 color name such as 'white', 'black', 'red', 'green',
-    'blue', 'yellow', 'magenta', 'cyan', or 'burlywood'.
+        twopi
+            For undirected graph layouts - radial
 
-    The 'node', 'edge' and 'graph' attributes allow you to specify global
-    node, edge and graph attributes (in addition to those controlled by the
-    special attributes described above). The value should be a hash
-    reference containing the corresponding key-value pairs. For example, to
-    make all nodes box-shaped (unless explicity given another shape):
+        circo
+            For undirected graph layouts - circular
 
-      my $g = GraphViz->new(node => {shape => 'box'});
+        fdp For undirected graph layouts - force directed spring model
+
+    directed
+        The 'directed' attribute, which defaults to 1 (true) specifies
+        directed (edges have arrows) graphs. Setting this to zero produces
+        undirected graphs (edges do not have arrows).
+
+    rankdir
+        Another attribute 'rankdir' controls the direction the nodes are
+        linked together. If true it will do left->right linking rather than
+        the default up-down linking.
+
+    width, height
+        The 'width' and 'height' attributes control the size of the bounding
+        box of the drawing in inches. This is more useful for PostScript
+        output as for raster graphic (such as PNG) the pixel dimensions can
+        not be set, although there are generally 96 pixels per inch.
+
+    pagewidth, pageheight
+        The 'pagewidth' and 'pageheight' attributes set the PostScript
+        pagination size in inches. That is, if the image is larger than the
+        page then the resulting PostScript image is a sequence of pages that
+        can be tiled or assembled into a mosaic of the full image. (This
+        only works for PostScript output).
+
+    concentrate
+        The 'concentrate' attribute controls enables an edge merging
+        technique to reduce clutter in dense layouts of directed graphs. The
+        default is not to merge edges.
+
+    random_start
+        For undirected graphs, the 'random_start' attribute requests an
+        initial random placement for the graph, which may give a better
+        result. The default is not random.
+
+    epsilon
+        For undirected graphs, the 'epsilon' attribute decides how long the
+        graph solver tries before finding a graph layout. Lower numbers
+        allow the solver to fun longer and potentially give a better layout.
+        Larger values can decrease the running time but with a reduction in
+        layout quality. The default is 0.1.
+
+    overlap
+        The 'overlap' option allows you to set layout behavior for graph
+        nodes that overlap. (From GraphViz documentation:)
+
+        Determines if and how node overlaps should be removed.
+
+        true
+            (the default) overlaps are retained.
+
+        scale
+            overlaps are removed by uniformly scaling in x and y.
+
+        false
+            If the value converts to "false", node overlaps are removed by a
+            Voronoi-based technique.
+
+        scalexy
+            x and y are separately scaled to remove overlaps.
+
+        orthoxy, orthxy
+            If the value is "orthoxy" or "orthoyx", overlaps are moved by
+            optimizing two constraint problems, one for the x axis and one
+            for the y. The suffix indicates which axis is processed first.
+
+            NOTE: The methods related to "orthoxy" and "orthoyx" are still
+            evolving. The semantics of these may change, or these methods
+            may disappear altogether.
+
+        compress
+            If the value is "compress", the layout will be scaled down as
+            much as possible without introducing any overlaps.
+
+        Except for the Voronoi method, all of these transforms preserve the
+        orthogonal ordering of the original layout. That is, if the x
+        coordinates of two nodes are originally the same, they will remain
+        the same, and if the x coordinate of one node is originally less
+        than the x coordinate of another, this relation will still hold in
+        the transformed layout. The similar properties hold for the y
+        coordinates.
+
+    no_overlap
+        The 'no_overlap' overlap option, if set, tells the graph solver to
+        not overlap the nodes. Deprecated, Use 'overlap' => 'false'.
+
+    ratio
+        The 'ratio' option sets the aspect ratio (drawing height/drawing
+        width) for the drawing. Note that this is adjusted before the size
+        attribute constraints are enforced. Default value is "fill".
+
+        numeric
+            If ratio is numeric, it is taken as the desired aspect ratio.
+            Then, if the actual aspect ratio is less than the desired ratio,
+            the drawing height is scaled up to achieve the desired ratio; if
+            the actual ratio is greater than that desired ratio, the drawing
+            width is scaled up.
+
+        fill
+            If ratio = "fill" and the size attribute is set, node positions
+            are scaled, separately in both x and y, so that the final
+            drawing exactly fills the specified size.
+
+        compress
+            If ratio = "compress" and the size attribute is set, dot
+            attempts to compress the initial layout to fit in the given
+            size. This achieves a tighter packing of nodes but reduces the
+            balance and symmetry. This feature only works in dot.
+
+        expand
+            If ratio = "expand" the size attribute is set, and both the
+            width and the height of the graph are less than the value in
+            size, node positions are scaled uniformly until at least one
+            dimension fits size exactly. Note that this is distinct from
+            using size as the desired size, as here the drawing is expanded
+            before edges are generated and all node and text sizes remain
+            unchanged.
+
+        auto
+            If ratio = "auto" the page attribute is set and the graph cannot
+            be drawn on a single page, then size is set to an ``ideal''
+            value. In particular, the size in a given dimension will be the
+            smallest integral multiple of the page size in that dimension
+            which is at least half the current size. The two dimensions are
+            then scaled independently to the new size. This feature only
+            works in dot.
+
+    bgcolor
+        The 'bgcolor' option sets the background colour. A colour value may
+        be "h,s,v" (hue, saturation, brightness) floating point numbers
+        between 0 and 1, or an X11 color name such as 'white', 'black',
+        'red', 'green', 'blue', 'yellow', 'magenta', 'cyan', or 'burlywood'.
+
+    node,edge,graph
+        The 'node', 'edge' and 'graph' attributes allow you to specify
+        global node, edge and graph attributes (in addition to those
+        controlled by the special attributes described above). The value
+        should be a hash reference containing the corresponding key-value
+        pairs. For example, to make all nodes box-shaped (unless explicity
+        given another shape):
+
+          my $g = GraphViz->new(node => {shape => 'box'});
 
   add_node
     A graph consists of at least one node. All nodes have a name attached
@@ -350,7 +455,7 @@ METHODS
 
   as_canon, as_text, as_gif etc. methods
     There are a number of methods which generate input for dot / neato /
-    twopi or output the graph in a variety of formats.
+    twopi / circo / fdp or output the graph in a variety of formats.
 
     Note that if you pass a filename, the data is written to that filename.
     If you pass a filehandle, the data will be streamed to the filehandle.
@@ -372,10 +477,16 @@ METHODS
       # or
       $g->as_png(sub { $png_image .= shift });
 
+    as_debug
+        The as_debug method returns the dot file which we pass to GraphViz.
+        It does not lay out the graph. This is mostly useful for debugging.
+
+          print $g->as_debug;
+
     as_canon
-        The as_canon method returns the canonical dot / neato / twopi file
-        which corresponds to the graph. It does not layout the graph - every
-        other as_* method does.
+        The as_canon method returns the canonical dot / neato / twopi /
+        circo / fdp file which corresponds to the graph. It does not layout
+        the graph - every other as_* method does.
 
           print $g->as_canon;
 
@@ -392,7 +503,7 @@ METHODS
 
     as_text
         The as_text method returns text which is a layed-out dot / neato /
-        twopi format file.
+        twopi / circo / fdp format file.
 
           print $g->as_text;
 
@@ -467,15 +578,21 @@ METHODS
 
           print $g->as_wbmp;
 
-    as_cmap
+    as_cmap (deprecated)
         Returns a string which contains a layed-out HTML client-side image
-        map format file.
+        map format file. Use as_cmpax instead.
 
           print $g->as_cmap;
 
-    as_ismap
-        Returns a string which contains a layed-out old-style server-side
+    as_cmapx
+        Returns a string which contains a layed-out HTML HTML/X client-side
         image map format file.
+
+          print $g->as_cmapx;
+
+    as_ismap (deprecated)
+        Returns a string which contains a layed-out old-style server-side
+        image map format file. Use as_imap instead.
 
           print $g->as_ismap;
 
@@ -510,6 +627,12 @@ METHODS
         Returns a string which contains a layed-out SVG-format file.
 
           print $g->as_svg;
+
+    as_svgz
+        Returns a string which contains a layed-out SVG-format file that is
+        compressed.
+
+          print $g->as_svgz;
 
     as_plain
         Returns a string which contains a layed-out simple-format file.

@@ -4,7 +4,7 @@ use strict;
 
 use lib '../lib', 'lib';
 use GraphViz;
-use Test::More tests => 24;
+use Test::More tests => 30;
 
 # make a nice simple graph and check how output is handled.
 my $g = GraphViz->new();
@@ -89,7 +89,8 @@ EOF
   # have to use regexes cause the output includes numbers that may
   # change each time
   like($result[0], qr/^digraph test {/);
-  like($result[1], qr/^\s*node\s*\[\s*label\s*=\s*"\\N"\s*\];\s*/);
-  like($result[2], qr/^\s*graph\s*\[bb=.*/);
-  like($result[3], qr/^\s*node1\s*\[label=London.*\];/);
+  like($result[1], qr/^\s+graph \[ratio=fill\];/);
+  like($result[2], qr/^\s*node\s*\[\s*label\s*=\s*"\\N"\s*\];\s*/);
+  like($result[3], qr/^\s*graph\s*\[bb=.*/);
+  like($result[4], qr/^\s*node1\s*\[label=London.*\];/);
 }

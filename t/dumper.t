@@ -35,6 +35,7 @@ $g = GraphViz::Data::Grapher->new(\@d);
 
 -- expect --
 digraph test {
+	ratio="fill";
 	GraphViz [color="red", label="GraphViz"];
 	node1 [color="blue", label="<port0>@", shape="record"];
 	node2 [color="black", label="<port0>red|<port1>%|<port2>blue|<port3>undef|<port4>Object|<port5>2", shape="record"];

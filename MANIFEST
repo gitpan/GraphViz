@@ -9,8 +9,6 @@ examples/clusters2.pl
 examples/directories.pl
 examples/dprofpp.graphviz
 examples/dumper.pl
-examples/imlib.pl
-examples/maian.ttf
 examples/make_all.pl
 examples/perly.output
 examples/port.pl
@@ -43,5 +41,6 @@ lib/GraphViz/Small.pm
 lib/GraphViz/XML.pm
 t/dumper.t
 t/foo.t
+t/pod.t
 t/simple.t
 META.yml                                 Module meta-data (added by MakeMaker)

@@ -1,8 +1,10 @@
-#!/usr/bin/perl -w
+#!perl -T
 
+use warnings;
+use strict;
 use lib '../lib', 'lib';
 use GraphViz;
-use Test::More tests => 29;
+use Test::More tests => 30;
 
 my @lines = <DATA>;
 
@@ -32,18 +34,21 @@ __DATA__
 $g = GraphViz->new();
 -- expect --
 digraph test {
+	ratio="fill";
 }
 
 -- test --
 $g = GraphViz->new(directed => 1)
 -- expect --
 digraph test {
+	ratio="fill";
 }
 
 -- test --
 $g = GraphViz->new(directed => 0)
 -- expect --
 graph test {
+	ratio="fill";
 }
 
 -- test --
@@ -51,6 +56,7 @@ $g = GraphViz->new(rankdir => 1)
 -- expect --
 digraph test {
 	rankdir=LR;
+	ratio="fill";
 }
 
 -- test --
@@ -58,6 +64,7 @@ $g = GraphViz->new();
 $g->add_node(label => 'London');
 -- expect --
 digraph test {
+	ratio="fill";
 	node1 [label="London"];
 }
 
@@ -66,6 +73,7 @@ $g = GraphViz->new(directed => 0);
 $g->add_node('London');
 -- expect --
 graph test {
+	ratio="fill";
 	London [label="London"];
 }
 
@@ -74,6 +82,7 @@ $g = GraphViz->new();
 $g->add_node('London', label => 'Big smoke');
 -- expect --
 digraph test {
+	ratio="fill";
 	London [label="Big smoke"];
 }
 
@@ -82,6 +91,7 @@ $g = GraphViz->new();
 $g->add_node('London', label => 'Big\nsmoke');
 -- expect --
 digraph test {
+	ratio="fill";
 	London [label="Big\nsmoke"];
 }
 
@@ -90,6 +100,7 @@ $g = GraphViz->new();
 $g->add_node('London', label => 'Big smoke', color => 'red');
 -- expect --
 digraph test {
+	ratio="fill";
 	London [color="red", label="Big smoke"];
 }
 
@@ -99,6 +110,7 @@ $g->add_node('London');
 $g->add_node('Paris');
 -- expect --
 digraph test {
+	ratio="fill";
 	London [label="London"];
 	Paris [label="Paris"];
 }
@@ -109,6 +121,7 @@ $g->add_node('London');
 $g->add_edge('London' => 'London');
 -- expect --
 digraph test {
+	ratio="fill";
 	London [label="London"];
 	London -> London;
 }
@@ -119,6 +132,7 @@ $g->add_node('London');
 $g->add_edge('London' => 'London', label => 'Foo');
 -- expect --
 digraph test {
+	ratio="fill";
 	London [label="London"];
 	London -> London [label="Foo"];
 }
@@ -129,6 +143,7 @@ $g->add_node('London');
 $g->add_edge('London' => 'London', color => 'red');
 -- expect --
 digraph test {
+	ratio="fill";
 	London [label="London"];
 	London -> London [color="red"];
 }
@@ -140,6 +155,7 @@ $g->add_node('Paris');
 $g->add_edge('London' => 'Paris');
 -- expect --
 digraph test {
+	ratio="fill";
 	London [label="London"];
 	Paris [label="Paris"];
 	London -> Paris;
@@ -153,6 +169,7 @@ $g->add_edge('London' => 'Paris');
 $g->add_edge('Paris' => 'London');
 -- expect --
 digraph test {
+	ratio="fill";
 	London [label="London"];
 	Paris [label="Paris"];
 	London -> Paris;
@@ -169,6 +186,7 @@ $g->add_edge('London' => 'Paris');
 $g->add_edge('Paris' => 'London');
 -- expect --
 digraph test {
+	ratio="fill";
 	London [label="London"];
 	Paris [label="Paris"];
 	London -> London;
@@ -188,6 +206,7 @@ $g->add_edge('London' => 'New York', label => 'Far');
 $g->add_edge('Paris' => 'London');
 -- expect --
 digraph test {
+	ratio="fill";
 	London [label="London"];
 	"New York" [label="New York"];
 	Paris [label="City of\nlurve"];
@@ -209,6 +228,7 @@ $g->add_edge('London' => 'New York', label => 'Far');
 $g->add_edge('Paris' => 'London');
 -- expect --
 digraph test {
+	ratio="fill";
 	"New York" [label="New York"];
 	London -> "New York" [label="Far"];
 	subgraph cluster_Europe {
@@ -236,6 +256,7 @@ foreach my $i (1..16) {
 }
 -- expect --
 graph test {
+	ratio="fill";
 	node7 [label="10"];
 	node8 [label="12"];
 	node9 [label="14"];
@@ -275,6 +296,7 @@ $g->add_edge('London' => 'Paris', from_port => 0);
 $g->add_edge('New York' => 'London', to_port => 1);
 -- expect --
 digraph test {
+	ratio="fill";
 	London [label="<port0>Heathrow|<port1>Gatwick", shape="record"];
 	"New York" [label="JFK"];
 	Paris [label="CDG"];
@@ -293,8 +315,8 @@ $g->add_edge('Paris' => 'London');
 -- expect --
 digraph test {
 	size="30,20";
-	ratio=fill
 	page="8.5,11";
+	ratio="fill";
 	London [label="London"];
 	Paris [label="Paris"];
 	London -> London;
@@ -307,6 +329,7 @@ digraph test {
 $g = GraphViz->new(concentrate => 1, sort => 1)
 -- expect --
 digraph test {
+	ratio="fill";
 	concentrate=true;
 }
 
@@ -314,6 +337,7 @@ digraph test {
 $g = GraphViz->new(epsilon => 0.001, random_start => 1, sort => 1)
 -- expect --
 digraph test {
+	ratio="fill";
 	epsilon=0.001;
 	start=rand;
 }
@@ -337,6 +361,7 @@ $g->add_edge('London' => 'New York', label => 'Far', color => 'red');
 $g->add_edge('Paris' => 'London');
 -- expect --
 digraph test {
+	ratio="fill";
 	"New York" [color="yellow", label="New York"];
 	London -> "New York" [color="red", label="Far"];
 	subgraph cluster_Europe {
@@ -360,6 +385,7 @@ $g->add_edge('Paris' => 'London');
 
 -- expect --
 digraph test {
+	ratio="fill";
 	node [shape="box"];
 	edge [color="red"];
 	graph [rotate="90"];
@@ -383,6 +409,7 @@ $g->add_node('f');
 
 -- expect --
 digraph test {
+	ratio="fill";
 	a [label="a"];
 	b [label="b"];
 	c [label="c"];
@@ -399,6 +426,7 @@ $g->add_edge('c' => 'a');
 
 -- expect --
 digraph test {
+	ratio="fill";
 	a [label="a"];
 	b [label="b"];
 	c [label="c"];
@@ -421,6 +449,7 @@ $g->add_edge('Boston' => 'New York');
 
 -- expect --
 digraph test {
+	ratio="fill";
 	Boston [label="Boston", rank="top"];
 	London [label="London"];
 	"New York" [label="New York"];
@@ -445,7 +474,8 @@ $g->add_edge('Boston' => 'New York');
 
 -- expect --
 digraph test {
-	overlap=false;
+	ratio="fill";
+	overlap="false";
 	Boston [label="Boston", rank="top"];
 	London [label="London"];
 	"New York" [label="New York"];
@@ -454,4 +484,12 @@ digraph test {
 	London -> "New York" [label="Far"];
 	Paris -> London;
 	{rank=same; Boston; Paris}
+}
+-- test --
+$g = GraphViz->new();
+$g->add_node('GOroot', label => '<<FONT COLOR="red">root</FONT>>', shape => 'plaintext');
+-- expect --
+digraph test {
+	ratio="fill";
+	GOroot [label=<<FONT COLOR="red">root</FONT>>, shape="plaintext"];
 }
