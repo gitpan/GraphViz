@@ -7,7 +7,7 @@ use strict;
 use lib '../lib';
 use GraphViz;
 
-my $graph = GraphViz->new(directed => 0, concentrate => 1, epsilon => 0.001, random_start => 1);
+my $graph = GraphViz->new(layout => 'neato', directed => 0, concentrate => 1, epsilon => 0.001, random_start => 1, no_overlap => 1m);
 
 open(IN, shift || '../README');
 

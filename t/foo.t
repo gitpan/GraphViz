@@ -4,9 +4,7 @@ use strict;
 
 use lib '../lib', 'lib';
 use GraphViz;
-use Test;
-
-BEGIN { plan tests => 6 }
+use Test::More tests => 24;
 
 # make a nice simple graph and check how output is handled.
 my $g = GraphViz->new();
@@ -77,8 +75,6 @@ sub read_file {
 
 sub check_result {
   my @result = @_;
-  my $ok = 1;
-
 
   my $expect = <<'EOF';
 Expected something like:
@@ -92,18 +88,8 @@ EOF
 
   # have to use regexes cause the output includes numbers that may
   # change each time
-  $ok = 0
-    unless $result[0] =~ /^digraph test {/;
-  $ok = 0
-   unless $result[1] =~ /^\s*node\s*\[\s*label\s*=\s*"\\N"\s*\];\s*/;
-  $ok = 0
-    unless $result[2] =~ /^\s*graph\s*\[bb=.*/;
-  $ok = 0
-    unless $result[3] =~ /^\s*node1\s*\[label=London.*\];/;
-
-  if ($ok) {
-    ok(1);
-  } else {
-    ok(0, $expect);
-  }
+  like($result[0], qr/^digraph test {/);
+  like($result[1], qr/^\s*node\s*\[\s*label\s*=\s*"\\N"\s*\];\s*/);
+  like($result[2], qr/^\s*graph\s*\[bb=.*/);
+  like($result[3], qr/^\s*node1\s*\[label=London.*\];/);
 }

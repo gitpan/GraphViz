@@ -2,9 +2,7 @@
 
 use lib '../lib', 'lib';
 use GraphViz::Data::Grapher;
-use Test;
-
-BEGIN { plan tests => 1 }
+use Test::More tests => 1;
 
 my @lines = <DATA>;
 
@@ -25,12 +23,7 @@ foreach my $lines (split '-- test --', (join "", @lines)) {
   $result =~ s|^\n||mg;
   $result =~ s|\n$||mg;
 
-  if ($expect eq $result) {
-    ok(1);
-  } else {
-    ok($result, $expect);
-#    print "[$result]\n";
-  }
+  is($result, $expect, "got expected graph");
 }
 
 

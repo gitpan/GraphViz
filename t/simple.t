@@ -2,9 +2,7 @@
 
 use lib '../lib', 'lib';
 use GraphViz;
-use Test;
-
-BEGIN { plan tests => 29 }
+use Test::More tests => 29;
 
 my @lines = <DATA>;
 
@@ -25,12 +23,7 @@ foreach my $lines (split '-- test --', (join "", @lines)) {
   $result =~ s|^\n||mg;
   $result =~ s|\n$||mg;
 
-  if ($expect eq $result) {
-    ok(1);
-  } else {
-    ok($result, $expect);
-#    print "[$result]\n";
-  }
+  is($result, $expect);
 }
 
 

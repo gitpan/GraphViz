@@ -9,7 +9,7 @@ use Math::Bezier;
 use IPC::Run qw(run binary);
 
 # This is incremented every time there is a change to the API
-$VERSION = '1.5';
+$VERSION = '1.6';
 
 
 =head1 NAME
@@ -37,8 +37,8 @@ GraphViz - Interface to the GraphViz graphing tool
 
 This module provides an interface to layout and image generation of
 directed and undirected graphs in a variety of formats (PostScript,
-PNG, etc.) using the "dot" and "neato" programs from the GraphViz
-project (http://www.graphviz.org/ or
+PNG, etc.) using the "dot", "neato" and "twopi" programs from the
+GraphViz project (http://www.graphviz.org/ or
 http://www.research.att.com/sw/tools/graphviz/).
 
 =head2 What is a graph?
@@ -121,9 +121,15 @@ prize.
 
 This is the constructor. It accepts several attributes.
 
-The most important attribute is named 'directed', which defaults to 1
-(true) - this specifies directed (tree-like) graphs. Setting this to
-zero produces undirected graphs, which are layed out differently.
+The most two important attributes are 'layout' and 'directed'. The
+'layout' attribute determines which layout algorithm GraphViz.pm will
+use. Possible values are: 'dot' (the default GraphViz layout for
+directed graph layouts), 'neato' (for undirected graph layouts -
+spring model) or 'twopi' (for undirected graph layouts - circular).
+
+The 'directed' attribute, which defaults to 1 (true) specifies
+directed (edges have arrows) graphs. Setting this to zero produces
+undirected graphs (edges do not have arrows).
 
 Another attribute 'rankdir' controls the direction the nodes are linked
 together. If true it will do left->right linking rather than the
@@ -142,6 +148,7 @@ works for PostScript output).
 
   my $g = GraphViz->new();
   my $g = GraphViz->new(directed => 0);
+  my $g = GraphViz->new(layout => 'neato');
   my $g = GraphViz->new(rankdir  => 1);
   my $g = GraphViz->new(width => 8.5, height => 11);
   my $g = GraphViz->new(width => 30, height => 20,
@@ -163,6 +170,11 @@ quality. The default is 0.1.
 
 The 'no_overlap' overlap option, if set, tells the graph solver to not
 overlap the nodes.
+
+The 'bgcolor' option sets the background colour. A colour value may be
+"h,s,v" (hue, saturation, brightness) floating point numbers between 0
+and 1, or an X11 color name such as 'white', 'black', 'red', 'green',
+'blue', 'yellow', 'magenta', 'cyan', or 'burlywood'.
 
 The 'node', 'edge' and 'graph' attributes allow you to specify global
 node, edge and graph attributes (in addition to those controlled by
@@ -197,6 +209,16 @@ sub new {
       $self->{DIRECTED} = $config->{directed};
   } else {
       $self->{DIRECTED} = 1; # default to directed
+  }
+
+  if (exists $config->{layout}) {
+      $self->{LAYOUT} = $config->{layout};
+  } else {
+      $self->{LAYOUT} = "dot"; # default layout
+  }
+
+  if (exists $config->{bgcolor}) {
+      $self->{BGCOLOR} = $config->{bgcolor};
   }
 
   $self->{RANK_DIR} = $config->{rankdir} if (exists $config->{rankdir});
@@ -568,8 +590,8 @@ sub add_edge {
 
 =head2 as_canon, as_text, as_gif etc. methods
 
-There are a number of methods which generate input for dot / neato or
-output the graph in a variety of formats.
+There are a number of methods which generate input for dot / neato /
+twopi or output the graph in a variety of formats.
 
 Note that if you pass a filename, the data is written to that
 filename. If you pass a filehandle, the data will be streamed to the
@@ -595,9 +617,9 @@ the output to if you want your application to be portable to Win32.
 
 =item as_canon
 
-The as_canon method returns the canonical dotneato file which
-corresponds to the graph. It does not layout the graph - every other
-as_* method does.
+The as_canon method returns the canonical dot / neato / twopi file
+which corresponds to the graph. It does not layout the graph - every
+other as_* method does.
 
   print $g->as_canon;
 
@@ -615,7 +637,8 @@ as_* method does.
 
 =item as_text
 
-The as_text method returns text which is a layed-out dot / neato-format file.
+The as_text method returns text which is a layed-out dot / neato /
+twopi format file.
 
   print $g->as_text;
 
@@ -794,7 +817,7 @@ sub _parse_dot {
   my $graph = $self->{GRAPH};
 
   my $out;
-  my $program = $self->{DIRECTED} ? 'dot' : 'neato';
+  my $program = $self->{LAYOUT};
 
   run [$program, '-Tplain'], \$dot, \$out;
 
@@ -874,6 +897,9 @@ sub _as_debug {
 
   # no_overlap
   $dot .= "\toverlap=false;\n" if $self->{NO_OVERLAP};
+
+  # color, bgcolor
+  $dot .= "\tbgcolor=" . $self->{BGCOLOR} . ";\n" if $self->{BGCOLOR};
 
   # Global node, edge and graph attributes
   $dot .= "\tnode" . _attributes($self->{NODE_ATTRS}) . ";\n"
@@ -962,7 +988,7 @@ sub _as_debug {
 }
 
 
-# Call dot/neato with the input text and any parameters
+# Call dot / neato / twopi with the input text and any parameters
 
 sub _as_generic {
   my($self, $type, $dot, $output) = @_;
@@ -982,7 +1008,7 @@ sub _as_generic {
       $out = \$buffer;
   }
 
-  my $program = $self->{DIRECTED} ? 'dot' : 'neato';
+  my $program = $self->{LAYOUT};
 
   run [$program, $type], \$dot, ">", binary(), $out;
 
@@ -990,7 +1016,7 @@ sub _as_generic {
 }
 
 
-# Quote a node/edge name using dotneato's quoting rules
+# Quote a node/edge name using dot / neato / twopi's quoting rules
 
 sub _quote_name {
   my($self, $name) = @_;
@@ -998,7 +1024,7 @@ sub _quote_name {
 
   return $self->{_QUOTE_NAME_CACHE}->{$name} if exists $self->{_QUOTE_NAME_CACHE}->{$name};
 
-  if (defined $name && $name =~ /^[a-zA-Z]\w*$/) {
+  if (defined $name && $name =~ /^[a-zA-Z]\w*$/ && $name ne "graph") {
     # name is fine
   } elsif (defined $name && $name =~ /^[a-zA-Z](\w| )*$/) {
     # name contains spaces, so quote it
@@ -1016,7 +1042,7 @@ sub _quote_name {
 }
 
 
-# Return the attributes of a node or edge as a dotneato attribute
+# Return the attributes of a node or edge as a dot / neato / twopi attribute
 # string
 
 sub _attributes {

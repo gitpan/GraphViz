@@ -1,5 +1,13 @@
 Revision history for Perl module GraphViz.
 
+1.6 Sat Jan 18 15:47:26 GMT 2003
+	- moved tests to Test::More
+	- new test which checks if graphviz is installed
+	- new 'layout' graph attribute to support twopi - you
+	  may have to change your programs!
+	- new bgcolor graph attribute (idea by Scott Murman)
+	- labels named "graph" now work
+
 1.5 Sun Jan 13 16:59:14 GMT 2002
 	- updated code reference docs slightly
 	- removed GraphViz::Remote as it was no longer working

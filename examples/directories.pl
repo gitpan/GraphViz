@@ -14,7 +14,7 @@ use GraphViz::No;
 
 my $directory = '../';
 
-my $graph = GraphViz::No->new(directed => 0);
+my $graph = GraphViz::No->new(directed => 0, layout => 'twopi');
 
 walk($directory);
 

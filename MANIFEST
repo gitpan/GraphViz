@@ -41,6 +41,7 @@ lib/GraphViz/Parse/Yapp.pm
 lib/GraphViz/Regex.pm
 lib/GraphViz/Small.pm
 lib/GraphViz/XML.pm
+t/00graphviz.t
 t/dumper.t
 t/foo.t
 t/simple.t
