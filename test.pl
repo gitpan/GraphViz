@@ -30,13 +30,13 @@ $g->add_edge({ from => 'London',
 $g->add_edge({ from => 'Paris',
                  to => 'London',});
 
-my $expect_text = qq|digraph test {
-\tLondon -> Paris;
-\tLondon -> New_York [label=Far];
-\tParis -> London;
-\tLondon [label=London];
-\tNew_York [label="New York"];
-\tParis [label="City of\\nlurve"];
+my $expect_text = q|digraph test {
+	London -> Paris;
+	London -> node1 [label="Far"];
+	Paris -> London;
+	London [label="London"];
+	node1 [label="New York"];
+	Paris [label="City of\nlurve"];
 }
 |;
 
@@ -47,9 +47,9 @@ $expect_text = q|digraph test {
 	node [	label = "\N" ];
 	London [label=London];
 	Paris [label="City of\nlurve"];
-	New_York [label="New York"];
+	node1 [label="New York"];
 	London -> Paris;
-	London -> New_York [label=Far];
+	London -> node1 [label=Far];
 	Paris -> London;
 }
 |;
@@ -62,9 +62,9 @@ $expect_text = q|digraph test {
 	graph [bb= "0,0,162,134"];
 	London [label=London, pos="33,116", width="0.89", height="0.50"];
 	Paris [label="City of\nlurve", pos="33,23", width="0.92", height="0.62"];
-	New_York [label="New York", pos="123,23", width="1.08", height="0.50"];
+	node1 [label="New York", pos="123,23", width="1.08", height="0.50"];
 	London -> Paris [pos="e,27,45 28,98 26,86 26,70 27,55"];
-	London -> New_York [label=Far, pos="e,107,40 49,100 63,85 84,63 101,46", lp="99,72"];
+	London -> node1 [label=Far, pos="e,107,40 49,100 63,85 84,63 101,46", lp="99,72"];
 	Paris -> London [pos="s,38,98 39,92 40,78 40,60 39,45"];
 }
 |;

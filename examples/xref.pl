@@ -1,0 +1,104 @@
+#!/usr/local/bin/perl
+
+=head1 NAME
+
+xref.pl - graphing subroutine cross-reference reports for Perl modules
+
+=cut
+
+=head1 SYNOPSIS
+
+To graph the subroutine cross-reference of 'Functional.pm':
+
+  % perl -MO=Xref,-r Functional.pm > examples/Functional.xref
+  % ./xref.pl Functional.xref > Functional.png
+  % gqview Functional.png
+  # (or your favourite image viewer)
+
+=head1 DESCRIPTION
+
+xref.pl uses the information gleamed by the B::Xref module to draw a
+pretty graph showing how subroutines in a module call each other.
+
+For example, the "Functional.png" image (supplied in the GraphViz
+distribution), which is generated from my Functional module on CPAN as
+in the synopsis, shows a couple of interesting features:
+
+=over 4
+
+=item * zip3 can call maximum, which can call foldl1, which can call foldl
+
+=item * prime can call Length and factors
+
+=item * show can call show_aux which can call show
+
+=item * gcd_aux and Until can call themselves
+
+=back
+
+Unfortunately, it is quite hard to understand this without looking at
+the picture, hence this program and the GraphViz module ;-)
+
+A couple of options are available by changing variables in the
+program. It is expected that these become command-line options for the
+next version.
+
+=head1 AUTHOR
+
+Leon Brocard E<lt>F<acme@astray.com>E<gt>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2000, Leon Brocard
+
+This module is free software; you can redistribute it or modify it
+under the same terms as Perl itself.
+
+=cut
+
+use strict;
+use lib '..';
+use GraphViz;
+use IO::File;
+
+my $multiple_packages = 0;
+my $multiple_edges = 0;
+my $show_lines = 0;
+
+$multiple_edges = 1 if $show_lines;
+
+my $fh = IO::File->new(shift || 'Functional.xref') || die "$!";
+
+my $g = GraphViz->new();
+
+my %edges;
+
+while (defined(my $line = <$fh>)) {
+  chomp $line;
+  my($file, $subroutine, $line, $package, $proto, $name, $type) = split /\s+/, $line;
+  next if $file =~ /\//;
+  next unless $proto =~ /&/;
+  next if $subroutine eq '(definitions)';
+  warn "$file $subroutine $package $proto $name $type\n";
+
+  if ($multiple_packages) {
+    $name = $package . '::' . $name;
+  } else {
+    $subroutine =~ s|^.*::||;
+  }
+
+  my $subnode = $g->add_node({ name => $subroutine });
+  my $namenode = $g->add_node({ name => $name });
+
+  next if !$multiple_edges && $edges{$subnode}->{$namenode}++;
+
+  my $edge = { from =>  $subnode,
+	         to => $namenode,
+	     };
+
+  $edge->{label} = $line if $show_lines;
+
+  $g->add_edge($edge);
+}
+
+print $g->as_png;

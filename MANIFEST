@@ -3,4 +3,7 @@ GraphViz.pm
 MANIFEST
 Makefile.PL
 README
+examples/Functional.png
+examples/Functional.xref
+examples/xref.pl
 test.pl

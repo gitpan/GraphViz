@@ -1,6 +1,13 @@
 Revision history for Perl module GraphViz.
 
-0.04 Wed Aug  9 16:14:35 2000
+0.06 Thu Aug 24 09:33:21 2000
+	- better quoting of nodes and edges (they can now have 
+	really wierd names)
+	- new examples directory with xref.pl: "graphing subroutine
+	cross-reference reports for Perl modules" and example graph to
+	see what kind of things it can do
+
+0.05 Wed Aug 18 13:12:25 2000
 	- now use dotneato to layout the graphs and can now ouput in a
 	variety of file formats
 

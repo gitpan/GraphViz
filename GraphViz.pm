@@ -7,7 +7,7 @@ use IPC::Run qw(run);
 use vars qw($AUTOLOAD);
 
 # This is incremented every time there is a change to the API
-$VERSION = '0.05';
+$VERSION = '0.06';
 
 
 =head1 NAME
@@ -35,18 +35,7 @@ GraphViz - Interface to the GraphViz graphing tool
 	           to => 'London',});
 
 
-  print $g->as_text;
-
-Prints the following:
-
-  digraph test {
-  	London -> Paris;
-  	London -> New_York [label=Far];
-  	Paris -> London;
-  	London [label=London];
-  	New_York [label="New York"];
-  	Paris [label="City of\nlurve"];
-  }
+  print $g->as_png;
 
 
 =head1 DESCRIPTION
@@ -382,9 +371,19 @@ sub _as_generic {
 
 # Quote a node/edge name using dotneato's quoting rules
 
+my %_quote_name_cache;
+
 sub _quote_name {
   my $name = shift;
-  $name =~ s|[ :]|_|g;
+  my $realname = $name;
+
+  return $_quote_name_cache{$name} if exists $_quote_name_cache{$name};
+
+  if ($name !~ /^[a-z]+$/i) {
+    # name contains weird characters - let's make up a name for it
+    $name = 'node' . ++$name_counter;
+  }
+  $_quote_name_cache{$realname} = $name;
   return $name;
 }
 
@@ -400,7 +399,7 @@ sub _attributes {
   foreach my $key (keys %$thing) {
     next if $key eq 'to' or $key eq 'from' or $key eq 'name';
     my $value = $thing->{$key};
-    $value = '"' . $value . '"' if $value =~ /\W/;
+    $value = '"' . $value . '"';
     $value =~ s|\n|\\n|g;
     $value = '""' if not defined $value;
     push @attributes, "$key=$value";
