@@ -34,7 +34,6 @@ examples/redcarpet.pl
 examples/redcarpet.png
 examples/remote.pl
 examples/remote.png
-examples/simple.dia
 examples/simple.pl
 examples/simple.png
 examples/tmon.dot
@@ -42,7 +41,6 @@ examples/tmon.out
 examples/tmon.png
 examples/undirected.pl
 examples/undirected.png
-examples/ximian-gnome-redhat-70-i386-packageinfo.xml
 examples/xml.pl
 examples/xml.png
 examples/xref.pl

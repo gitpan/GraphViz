@@ -4,7 +4,7 @@ use lib '..';
 use GraphViz;
 use Test;
 
-BEGIN { plan tests => 19 }
+BEGIN { plan tests => 21 }
 
 my @lines = <DATA>;
 
@@ -51,6 +51,13 @@ digraph test {
 $g = GraphViz->new(directed => 0)
 -- expect --
 graph test {
+}
+
+-- test --
+$g = GraphViz->new(rankdir => 1)
+-- expect --
+digraph test {
+	rankdir=LR;
 }
 
 -- test --
@@ -280,4 +287,12 @@ digraph test {
 	node2 [label="CDG"];
 	"node1":port0 -> node2;
 	node3 -> "node1":port1;
+}
+
+-- test --
+$g = GraphViz->new(width => 400, height => 400)
+-- expect --
+digraph test {
+	size="400,400";
+	ratio=fill
 }

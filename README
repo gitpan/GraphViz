@@ -13,3 +13,6 @@ use the GraphViz::Remote module.
 
 See the documentation for more information!
 
+Note that Marcel Grunauer has released some modules on CPAN to graph
+various other structures. See GraphViz::DBI and GraphViz::ISA for
+example.

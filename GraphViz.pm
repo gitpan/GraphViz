@@ -10,7 +10,7 @@ use Math::Bezier;
 use IPC::Run qw(run);
 
 # This is incremented every time there is a change to the API
-$VERSION = '0.11';
+$VERSION = '0.12';
 
 
 =head1 NAME
@@ -91,20 +91,39 @@ upstairs, around the corner from the toilet, so must have been around
 Spreadsheets are also a wonderfully simple graphical representation of
 computational models.
 
+=head2 Applications
+
+Bundled with this module are several modules to help graph data
+structures (GraphViz::Data::Dumper), XML (GraphViz::XML), and
+Parse::RecDescent grammars (GraphViz::Parse::RecDescent).
+
+Note that Marcel Grunauer has released some modules on CPAN to graph
+various other structures. See GraphViz::DBI and GraphViz::ISA for
+example.
+
 =head1 METHODS
-
-=cut
-
 
 =head2 new
 
-This is the constructor. It currently takes one attribute, 'directed',
-which defaults to 1 (true) - this specifies directed (tree-like)
-graphs. Setting this to zero produces undirected graphs, which are
-layed out differently.
+This is the constructor. It accepts several attributes.
+
+The most important attribute is named 'directed', which defaults to 1
+(true) - this specifies directed (tree-like) graphs. Setting this to
+zero produces undirected graphs, which are layed out differently.
+
+Another attribute 'rankdir' controls the direction the nodes are linked
+together. If true it will do left->right linking rather than the
+default up-down linking.
+
+The 'width' and 'height' attributes control the size of the bounding
+box of the drawing in inches. This is more useful for PostScript
+output as for raster graphic (such as PNG) the pixel dimensions
+can not be set, although there are generally 96 pixels per inch.
 
   my $g = GraphViz->new();
   my $g = GraphViz->new(directed => 0);
+  my $g = GraphViz->new(rankdir  => 1);
+  my $g = GraphViz->new(width => 4, height => 2);
 
 =cut
 
@@ -131,6 +150,11 @@ sub new {
   } else {
       $self->{DIRECTED} = 1; # default to directed
   }
+
+  $self->{RANK_DIR} = $config->{rankdir} if (exists $config->{rankdir});
+
+  $self->{WIDTH} = $config->{width} if (exists $config->{width});
+  $self->{HEIGHT} = $config->{height} if (exists $config->{width});
 
   bless($self, $class);
   return $self;
@@ -694,6 +718,12 @@ sub _as_debug {
   my $graph_type = $self->{DIRECTED} ? 'digraph' : 'graph';
 
   $dot .= "$graph_type test {\n";
+
+  # the direction of the graph
+  $dot .= "\trankdir=LR;\n" if $self->{RANK_DIR};
+
+  # the size of the graph
+  $dot .= "\tsize=\"" . $self->{WIDTH} . "," . $self->{HEIGHT} ."\";\n\tratio=fill\n" if $self->{WIDTH} && $self->{HEIGHT};
 
   my %clusters = ();
   my %clusters_edge = ();

@@ -1,5 +1,13 @@
 Revision history for Perl module GraphViz.
 
+0.12
+	- fixed bug in redcarpet.pl example
+	- new rankdir graph attribute, which controls the direction
+	  the nodes are linked together (patch by Mark Fowler)
+	- new 'width' and 'height' graph attributes control the size
+	  of the bounding box of the drawing in inches, requested by
+	  Pierre-Yves Genot
+
 0.11 Tue Mar  6 17:37:20 GMT 2001
 	- rearranged module naming: Data::GraphViz ->
 	  GraphViz::Data::Dumper, Parse::RecDescent::GraphViz ->

@@ -66,7 +66,7 @@ my $xp = XML::XPath->new(filename => 'ximian-gnome-redhat-70-i386-packageinfo.xm
 
 my $graph = process($xp);
 
-print $g->as_png;
+print $graph->as_png;
 
 __END__
 
