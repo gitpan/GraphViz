@@ -1,5 +1,15 @@
 Revision history for Perl module GraphViz.
 
+1.9 Tue Aug 24 15:30:31 BST 2004
+	- check for "dot" in the Makefile.PL instead of a test, as
+	  suggested by Autrijus Tang
+	- renamed Changes to CHANGES
+	- clusters can now take attributes as a hashref, thanks to
+	  patch from Richard A.Wells (see clusters2.pl)
+	- fix docbug in GraphViz::Parse::Yapp (spotted by Mark Fowler)
+	- better quoting (patch by Barrie Slaymaker)
+	- document as_debug (suggested by Richard Clamp)
+
 1.8 Sun Feb 23 09:15:14 GMT 2003
 	- support for client-side image maps by Dan Boorstein
 

@@ -19,7 +19,7 @@ GraphViz::Parse::Yapp - Visualise grammars
   use GraphViz::Parse::Yapp;
 
   # Pass in a file generated via yapp -v
-  my $graph = GraphViz::Parse::Yapp->new('Yapp.output');
+  my $g = GraphViz::Parse::Yapp->new('Yapp.output');
   print $g->as_png;
 
 

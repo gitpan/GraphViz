@@ -1,6 +1,22 @@
+use strict;
+use Config;
 use ExtUtils::MakeMaker;
-# See lib/ExtUtils/MakeMaker.pm for details of how to influence
-# the contents of the Makefile that is written.
+use File::Spec::Functions;
+
+print "Looking for dot... ";
+my $found = find("dot");
+
+if ($found) {
+  print "found it at $found\n";
+} else {
+  print "didn't find it\n";
+  die "****************************************************************
+GraphViz.pm has not been able to find the graphviz program 'dot'
+GraphViz.pm needs graphviz to function
+Please install graphviz first: http://www.graphviz.org/
+****************************************************************\n";
+}
+
 WriteMakefile(
             'NAME' => 'GraphViz',
     'VERSION_FROM' => 'lib/GraphViz.pm', # finds $VERSION
@@ -17,4 +33,15 @@ sub MY::libscan {
   my $path = $_[1];
   return '' if $path =~ /\B\.svn\b/;
   return $path;
+}
+
+sub find {
+  my $binary = shift;
+  my $path = join ', ', @ENV{PATH};
+  my $path_sep = $Config{path_sep};
+  foreach my $dir (split $path_sep, @ENV{PATH}) {
+    my $filename = catfile($dir, $binary);
+    return $filename if -x $filename;
+  }
+  return 0;
 }

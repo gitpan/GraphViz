@@ -9,7 +9,7 @@ use Math::Bezier;
 use IPC::Run qw(run binary);
 
 # This is incremented every time there is a change to the API
-$VERSION = '1.8';
+$VERSION = '1.9';
 
 
 =head1 NAME
@@ -344,6 +344,18 @@ cluster. An empty string means not clustered.
   $g->add_node('London', cluster => 'Europe');
   $g->add_node('Amsterdam', cluster => 'Europe');
 
+Clusters can also take a hashref so that you can set attributes:
+
+  my $eurocluster = {
+    name      =>'Europe',
+    style     =>'filled',
+    fillcolor =>'lightgray',
+    fontname  =>'arial',
+    fontsize  =>'12',
+  };
+  $g->add_node('London', cluster => $eurocluster, @default_attrs);
+
+
 Nodes can be located in the same rank (that is, at the same level in
 the graph) with the "rank" attribute. Nodes with the same rank value
 are ranked together.
@@ -395,6 +407,8 @@ sub add_node {
     } else {
       $node->{label} = $node->{name};
     }
+  } else {
+    $node->{label} =~ s#([|<>\[\]{}"])#\\$1#g;
   }
 
   delete $node->{cluster}
@@ -614,6 +628,13 @@ the output to if you want your application to be portable to Win32.
   $g->as_png(sub { $png_image .= shift });
 
 =over 4
+
+=item as_debug
+
+The as_debug method returns the dot file which we pass to GraphViz. It
+does not lay out the graph. This is mostly useful for debugging.
+
+  print $g->as_debug;
 
 =item as_canon
 
@@ -875,8 +896,12 @@ sub _parse_dot {
   return $graph;
 }
 
-
 # Return the main dot text
+sub as_debug {
+  my $self = shift;
+  return $self->_as_debug(@_); 
+}
+
 sub _as_debug {
   my $self = shift;
 
@@ -917,6 +942,7 @@ sub _as_debug {
     if exists($self->{GRAPH_ATTRS});
 
   my %clusters = ();
+  my %cluster_nodes = ();
   my %clusters_edge = ();
 
   my $arrow = $self->{DIRECTED} ? ' -> ' : ' -- ';
@@ -930,7 +956,9 @@ sub _as_debug {
 
     # Note all the clusters
     if (exists $node->{cluster} && $node->{cluster}) {
-      push @{$clusters{$node->{cluster}}}, $name;
+      # map "name" to value in case cluster attribute is not a simple string
+      $clusters{$node->{cluster}} = $node->{cluster};
+      push @{$cluster_nodes{$node->{cluster}}}, $name;
       next;
     }
 
@@ -961,14 +989,33 @@ sub _as_debug {
     }
   }
 
-  foreach my $cluster (sort keys %clusters) {
-    my $label = _attributes({ label => $cluster});
-    $label =~ s/^\s\[//;
-    $label =~ s/\]$//;
+  foreach my $clustername (sort keys %cluster_nodes) {
+    my $cluster = $clusters{$clustername};
+    my $attrs;
+    my $name;
+    if (ref($cluster) eq 'HASH') {
+      if (exists $cluster->{label}) {
+          $name = $cluster->{label};
+      }
+      elsif (exists $cluster->{name}) {
+          # "coerce" name attribute into label attribute
+          $name = $cluster->{name};
+          $cluster->{label} = $name;
+          delete $cluster->{name};
+      }
+      $attrs = _attributes($cluster);
+    } else {
+      $name = $cluster;
+      $attrs = _attributes({ label => $cluster});
+    }
+    # rewrite attributes string slightly
+    $attrs =~ s/^\s\[//o;
+    $attrs =~ s/,/;/go;
+    $attrs =~ s/\]$//o;
 
-    $dot .= "\tsubgraph cluster_" . $self->_quote_name($cluster) . " {\n";
-    $dot .= "\t\t$label;\n";
-    $dot .= join "", map { "\t\t" . $self->{NODES}->{$_}->{_code} . _attributes($self->{NODES}->{$_}) . ";\n"; } (@{$clusters{$cluster}});
+    $dot .= "\tsubgraph cluster_" . $self->_quote_name($name) . " {\n";
+    $dot .= "\t\t$attrs;\n";
+    $dot .= join "", map { "\t\t" . $self->{NODES}->{$_}->{_code} . _attributes($self->{NODES}->{$_}) . ";\n"; } (@{$cluster_nodes{$cluster}});
     $dot .= $clusters_edge{$cluster} if exists $clusters_edge{$cluster};
     $dot .= "\t}\n";
   }
@@ -1029,7 +1076,7 @@ sub _quote_name {
   my($self, $name) = @_;
   my $realname = $name;
 
-  return $self->{_QUOTE_NAME_CACHE}->{$name} if exists $self->{_QUOTE_NAME_CACHE}->{$name};
+  return $self->{_QUOTE_NAME_CACHE}->{$name} if $name && exists $self->{_QUOTE_NAME_CACHE}->{$name};
 
   if (defined $name && $name =~ /^[a-zA-Z]\w*$/ && $name ne "graph") {
     # name is fine
@@ -1095,7 +1142,7 @@ Leon Brocard E<lt>F<acme@astray.com>E<gt>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2000-1, Leon Brocard
+Copyright (C) 2000-4, Leon Brocard
 
 This module is free software; you can redistribute it or modify it
 under the same terms as Perl itself.

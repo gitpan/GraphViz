@@ -1,10 +1,11 @@
-Changes
+CHANGES
 MANIFEST
 Makefile.PL
 README
 examples/README
 examples/Yapp.output
 examples/clusters.pl
+examples/clusters2.pl
 examples/directories.pl
 examples/dprofpp.graphviz
 examples/dumper.pl
@@ -40,7 +41,7 @@ lib/GraphViz/Parse/Yapp.pm
 lib/GraphViz/Regex.pm
 lib/GraphViz/Small.pm
 lib/GraphViz/XML.pm
-t/00graphviz.t
 t/dumper.t
 t/foo.t
 t/simple.t
+META.yml                                 Module meta-data (added by MakeMaker)
