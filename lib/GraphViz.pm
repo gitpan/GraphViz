@@ -9,7 +9,7 @@ use Math::Bezier;
 use IPC::Run qw(run);
 
 # This is incremented every time there is a change to the API
-$VERSION = '1.3';
+$VERSION = '1.4';
 
 
 =head1 NAME
@@ -133,10 +133,18 @@ box of the drawing in inches. This is more useful for PostScript
 output as for raster graphic (such as PNG) the pixel dimensions
 can not be set, although there are generally 96 pixels per inch.
 
+The 'pagewidth' and 'pageheight' attributes set the PostScript
+pagination size in inches. That is, if the image is larger than the
+page then the resulting PostScript image is a sequence of pages that
+can be tiled or assembled into a mosaic of the full image. (This only
+works for PostScript output).
+
   my $g = GraphViz->new();
   my $g = GraphViz->new(directed => 0);
   my $g = GraphViz->new(rankdir  => 1);
-  my $g = GraphViz->new(width => 4, height => 2);
+  my $g = GraphViz->new(width => 8.5, height => 11);
+  my $g = GraphViz->new(width => 30, height => 20,
+			pagewidth => 8.5, pageheight => 11);
 
 The 'concentrate' attribute controls enables an edge merging technique
 to reduce clutter in dense layouts of directed graphs. The default is
@@ -191,6 +199,9 @@ sub new {
 
   $self->{WIDTH} = $config->{width} if (exists $config->{width});
   $self->{HEIGHT} = $config->{height} if (exists $config->{height});
+
+  $self->{PAGEWIDTH} = $config->{pagewidth} if (exists $config->{pagewidth});
+  $self->{PAGEHEIGHT} = $config->{pageheight} if (exists $config->{pageheight});
 
   $self->{CONCENTRATE} = $config->{concentrate} if (exists $config->{concentrate});
 
@@ -554,12 +565,21 @@ sub add_edge {
 There are a number of methods which generate input for dot / neato or
 output the graph in a variety of formats.
 
-Note that if you pass a filename, the image is written to that
-filename. Otherwise, it is returned:
+Note that if you pass a filename, the data is written to that
+filename. If you pass a filehandle, the data will be streamed to the
+filehandle. If you pass a scalar reference, then the data will be
+stored in that scalar. If you pass it a code reference, then it is
+called with the data. Otherwise, the data is returned:
 
   my $png_image = $g->as_png;
   # or
   $g->as_png("pretty.png"); # save image
+  # or
+  $g->as_png(\*STDOUT); # stream image to a filehandle
+  # or
+  #g->as_png(\$text); # save data in a scalar
+  # or
+  $g->as_png(sub { $png_image = shift });
 
 =over 4
 
@@ -730,6 +750,7 @@ sub AUTOLOAD {
   my $self = shift;
   my $type = ref($self)
     or croak "$self is not an object";
+  my $output = shift;
 
   my $name = $AUTOLOAD;
   $name =~ s/.*://;   # strip fully-qualified portion
@@ -741,13 +762,7 @@ sub AUTOLOAD {
   }
 
   if ($name =~ /^as_(ps|hpgl|pcl|mif|pic|gd|gd2|gif|jpeg|png|wbmp|ismap|imap|vrml|vtx|mp|fig|svg|dot|canon|plain)$/) {
-    my $filename = shift;
-    my $data = $self->_as_generic('-T' . $1, $self->_as_debug);
-    if ($filename) {
-      open(OUT, ">$filename");
-      print OUT $data;
-      close(OUT);
-    }
+    my $data = $self->_as_generic('-T' . $1, $self->_as_debug, $output);
     return $data;
   }
 
@@ -836,6 +851,7 @@ sub _as_debug {
 
   # the size of the graph
   $dot .= "\tsize=\"" . $self->{WIDTH} . "," . $self->{HEIGHT} ."\";\n\tratio=fill\n" if $self->{WIDTH} && $self->{HEIGHT};
+  $dot .= "\tpage=\"" . $self->{PAGEWIDTH} . "," . $self->{PAGEHEIGHT} ."\";\n" if $self->{PAGEWIDTH} && $self->{PAGEHEIGHT};
 
   # edge merging
   $dot .= "\tconcentrate=true;\n" if $self->{CONCENTRATE};
@@ -936,14 +952,28 @@ sub _as_debug {
 # Call dot/neato with the input text and any parameters
 
 sub _as_generic {
-  my($self, $type, $dot) = @_;
+  my($self, $type, $dot, $output) = @_;
 
-  my $out;
+  my $buffer;
+  my @out;
+  if ( ref $output || UNIVERSAL::isa(\$output, 'GLOB') ) {
+      # $output is a filehandle or a scalar reference or something.
+      # have to take a reference to a bare filehandle or run will
+      # complain
+      @out = ref $output ? $output : \$output;
+  } elsif (defined $output) {
+      # if its defined it must be a filename so we'll write to it.
+      @out = ('>', $output);
+  } else {
+      # but otherwise we capture output in a scalar
+      @out = \$buffer;
+  }
+
   my $program = $self->{DIRECTED} ? 'dot' : 'neato';
 
-  run [$program, $type], \$dot, \$out;
+  run [$program, $type], \$dot, @out;
 
-  return $out;
+  return $buffer unless defined $output;
 }
 
 
@@ -989,7 +1019,6 @@ sub _attributes {
     $value =~ s|"|\"|g;
     $value = '"' . $value . '"';
     $value =~ s|\n|\\n|g;
-
 
     $value = '""' if not defined $value;
     push @attributes, "$key=$value";

@@ -43,4 +43,5 @@ lib/GraphViz/Remote.pm
 lib/GraphViz/Small.pm
 lib/GraphViz/XML.pm
 t/dumper.t
+t/foo.t
 t/simple.t

@@ -7,6 +7,7 @@ Workshop, including:
   o Output a graph to ASCII
   o Graphing the symbol table
   o Graphing RDF
+  o Graph the current processes running on a system
 
 output to graph and back again
 

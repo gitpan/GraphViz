@@ -290,11 +290,24 @@ digraph test {
 }
 
 -- test --
-$g = GraphViz->new(width => 400, height => 400, sort => 1)
+$g = GraphViz->new(width => 30, height => 20, pagewidth => 8.5, pageheight=> 11, sort => 1);
+$g->add_node('London');
+$g->add_node('Paris');
+$g->add_edge('London' => 'London');
+$g->add_edge('Paris' => 'Paris');
+$g->add_edge('London' => 'Paris');
+$g->add_edge('Paris' => 'London');
 -- expect --
 digraph test {
-	size="400,400";
+	size="30,20";
 	ratio=fill
+	page="8.5,11";
+	London [label="London"];
+	Paris [label="Paris"];
+	London -> London;
+	London -> Paris;
+	Paris -> London;
+	Paris -> Paris;
 }
 
 -- test --
@@ -424,3 +437,4 @@ digraph test {
 	Paris -> London;
 	{rank=same; Boston; Paris}
 }
+

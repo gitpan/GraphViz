@@ -1,5 +1,13 @@
 Revision history for Perl module GraphViz.
 
+1.4 Wed Oct  3 07:57:42 BST 2001
+	- added new filehandle, scalar reference, and code reference
+	  scheme to as_* to allow streaming of data, rather than
+	  accumulating potentially very large output in memory (based
+	  on patch by Dave Rolsky)
+	- new pagewidth and pageheight graph attributes for creating
+	  PostScript mosaics of large graphs (idea by Nelson Loyola)
+
 1.3 Sun Aug 19 15:43:02 BST 2001
 	- labels can now contain quotes
 	- fixed bug: labels can now start with a number
