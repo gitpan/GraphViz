@@ -1,4 +1,4 @@
-package Data::GraphViz;
+package GraphViz::Data::Grapher;
 
 use strict;
 use vars qw($VERSION);
@@ -12,13 +12,13 @@ $VERSION = '0.01';
 
 =head1 NAME
 
-Data::GraphViz - Visualise data structures as a graph
+GraphViz::Data::Grapher - Visualise data structures as a graph
 
 =head1 SYNOPSIS
 
-  use Data::GraphViz;
+  use GraphViz::Data::Grapher;
 
-  my $graph = Data::GraphViz->new($structure);
+  my $graph = GraphViz::Data::Grapher->new($structure);
   print $g->as_png;
 
 =head1 DESCRIPTION
@@ -28,8 +28,9 @@ structures can grow quite large and it can be hard to understand the
 quite how the structure fits together.
 
 Data::Dumper can help by representing the structure as a text
-heirarchy, but Data::GraphViz goes a step further and visualises the
-structure by drawing a graph which represents the data structure.
+heirarchy, but GraphViz::Data::Grapher goes a step further and
+visualises the structure by drawing a graph which represents the data
+structure.
 
 Arrays are represented by records. Scalars are represented by
 themselves. Array references are represented by a '@' symbol, which is
@@ -45,7 +46,7 @@ type of the object. Undef is represented by 'undef'.
 This is the constructor. It takes a list, which is the data structure
 to be visualised. A GraphViz object is returned.
 
-  my $graph = Data::GraphViz->new([3, 4, 5], "Hello");
+  my $graph = GraphViz::Data::Grapher->new([3, 4, 5], "Hello");
 
 =cut
 

@@ -2,7 +2,7 @@
 
 use strict;
 use lib '..';
-use Parse::RecDescent::GraphViz;
+use GraphViz::Parse::RecDescent;
 
 # The grammar below was taken from the Parse::RecDescent
 # demo_recipe.pl script
@@ -117,6 +117,6 @@ q{
 };
 
 
-my $graph = Parse::RecDescent::GraphViz->new($recipegrammar);
+my $graph = GraphViz::Parse::RecDescent->new($recipegrammar);
 
 print $graph->as_png;

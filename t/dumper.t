@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w
 
 use lib '..';
-use Data::GraphViz;
-use GraphViz;
+use GraphViz::Data::Grapher;
+#use GraphViz;
 use Test;
 
 BEGIN { plan tests => 1 }
@@ -37,9 +37,9 @@ foreach my $lines (split '-- test --', (join "", @lines)) {
 
 __DATA__
 -- test --
-my @d = ("red", { a => [3, 1, 4, 1], b => { q => 'a', w => 'b'}}, "blue", undef, Data::GraphViz->new(), 2);
+my @d = ("red", { a => [3, 1, 4, 1], b => { q => 'a', w => 'b'}}, "blue", undef, GraphViz::Data::Grapher->new(), 2);
 
-$g = Data::GraphViz->new(\@d);
+$g = GraphViz::Data::Grapher->new(\@d);
 
 -- expect --
 digraph test {

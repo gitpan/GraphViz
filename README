@@ -5,7 +5,11 @@ DESCRIPTION
 
     This modules provides an interface to layout and generate images of 
     directed graphs in a variety of formats (PostScript, PNG, etc.) using 
-    the "dotneato" program from the GraphViz project 
+    the "dot" and "neato" programs from the GraphViz project 
     (http://www.graphviz.org/). 
 
+Note that you no longer need to install the GraphViz programs if you
+use the GraphViz::Remote module.
+
 See the documentation for more information!
+

@@ -1,5 +1,12 @@
 Revision history for Perl module GraphViz.
 
+0.11 Tue Mar  6 17:37:20 GMT 2001
+	- rearranged module naming: Data::GraphViz ->
+	  GraphViz::Data::Dumper, Parse::RecDescent::GraphViz ->
+	  GraphViz::Parse::RecDescent, XML::GraphViz -> GraphViz::XML,
+	- added GraphViz::Remote so that you do not need to install
+	  the graphviz tools to use this module
+
 0.10 Mon Mar  5 17:32:14 GMT 2001
 	- now allow simple add_edge({$from => $to}) syntax
 	  (idea by DJ Adams and Brian Ingerson)

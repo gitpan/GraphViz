@@ -1,4 +1,4 @@
-package Parse::RecDescent::GraphViz;
+package GraphViz::Parse::RecDescent;
 
 use strict;
 use vars qw($VERSION);
@@ -13,18 +13,18 @@ $VERSION = '0.01';
 
 =head1 NAME
 
-Parse::RecDescent::GraphViz - Visualise grammars
+GraphViz::Parse::RecDescent - Visualise grammars
 
 =head1 SYNOPSIS
 
-  use Parse::RecDescent::GraphViz;
+  use GraphViz::Parse::RecDescent;
 
   # Either pass in the grammar
-  my $graph = Parse::RecDescent::GraphViz->new($grammar);
+  my $graph = GraphViz::Parse::RecDescent->new($grammar);
   print $g->as_png;
 
   # or a Parse::RecDescent parser object
-  my $graph = Parse::RecDescent::GraphViz->new($parser);
+  my $graph = GraphViz::Parse::RecDescent->new($parser);
   print $g->as_ps;
 
 =head1 DESCRIPTION
@@ -57,10 +57,10 @@ either be the grammar text or a Parse::RecDescent parser object of the
 grammar to be visualised. A GraphViz object is returned.
 
   # Either pass in the grammar
-  my $graph = Parse::RecDescent::GraphViz->new($grammar);
+  my $graph = GraphViz::Parse::RecDescent->new($grammar);
 
   # or a Parse::RecDescent parser object
-  my $graph = Parse::RecDescent::GraphViz->new($parser);
+  my $graph = GraphViz::Parse::RecDescent->new($parser);
 
 =cut
 
@@ -154,7 +154,7 @@ sub _init {
 	  $text = $item->{name};
 	} else {
 	  # It's something we don't know about, so complain!
-	  warn "Parse::RecDescent::GraphViz: unknown type $type found!\n";
+	  warn "GraphViz::Parse::RecDescent: unknown type $type found!\n";
 	  $text = "?$type?";
 	}
 

@@ -10,7 +10,7 @@ use Math::Bezier;
 use IPC::Run qw(run);
 
 # This is incremented every time there is a change to the API
-$VERSION = '0.10';
+$VERSION = '0.11';
 
 
 =head1 NAME
@@ -274,6 +274,7 @@ sub add_node {
     $node->{label} = join '|', map
       { $_ =~ s#([|<>\[\]{}"])#\\$1#g; '<port' . $nports++ . '>' . $_ }
       (@{$node->{label}});
+#    $node->{label} = '{' . $node->{label} . '}'; Vertical ports for Trelane?
   }
 
   $self->{NODES}->{$node->{name}} = $node; # should remove!
@@ -611,7 +612,7 @@ sub AUTOLOAD {
   }
 
   if ($name =~ /^as_(ps|hpgl|pcl|mif|pic|gd|gd2|gif|jpeg|png|wbmp|ismap|imap|vrml|vtx|mp|fig|svg|dot|canon|plain)$/) {
-    return $self->_as_generic('-T' . $1);
+    return $self->_as_generic('-T' . $1, $self->_as_debug);
   }
 
   croak "Method $name not defined!";
@@ -757,13 +758,12 @@ sub _as_debug {
 # Call dot/neato with the input text and any parameters
 
 sub _as_generic {
-  my $self = shift;
+  my($self, $type, $dot) = @_;
 
-  my $dot = $self->_as_debug;
   my $out;
   my $program = $self->{DIRECTED} ? 'dot' : 'neato';
 
-  run [$program, @_], \$dot, \$out;
+  run [$program, $type], \$dot, \$out;
 
   return $out;
 }

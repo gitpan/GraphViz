@@ -4,13 +4,13 @@
 
 use strict;
 use lib '..';
-use XML::GraphViz;
+use GraphViz::XML;
 
 my $xml = '<html><head><title>news</title></head><body>
 <p>Check out the <a href="/news/">latest news</a>.</p>
 <p>Under construction!!!</p></body></html>';
 
-my $graph = XML::GraphViz->new($xml);
+my $graph = GraphViz::XML->new($xml);
 
 print $graph->as_png;
 #print $g->as_text;

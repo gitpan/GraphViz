@@ -1,4 +1,4 @@
-package XML::GraphViz;
+package GraphViz::XML;
 
 use strict;
 use vars qw($VERSION);
@@ -12,13 +12,13 @@ $VERSION = '0.01';
 
 =head1 NAME
 
-XML::GraphViz - Visualise XML as a tree
+GraphViz::XML - Visualise XML as a tree
 
 =head1 SYNOPSIS
 
-  use XML::GraphViz;
+  use GraphViz::XML;
 
-  my $graph = XML::GraphViz->new($xml);
+  my $graph = GraphViz::XML->new($xml);
   print $g->as_png;
 
 =head1 DESCRIPTION
@@ -40,7 +40,7 @@ Note that the XML::Twig module should be installed.
 This is the constructor. It takes one mandatory argument, which is the
 XML to be visualised. A GraphViz object is returned.
 
-  my $graph = XML::GraphViz->new($xml);
+  my $graph = GraphViz::XML->new($xml);
 
 =cut
 
