@@ -9,7 +9,7 @@ use Math::Bezier;
 use IPC::Run qw(run binary);
 
 # This is incremented every time there is a change to the API
-$VERSION = '1.6';
+$VERSION = '1.7';
 
 
 =head1 NAME
@@ -899,7 +899,7 @@ sub _as_debug {
   $dot .= "\toverlap=false;\n" if $self->{NO_OVERLAP};
 
   # color, bgcolor
-  $dot .= "\tbgcolor=" . $self->{BGCOLOR} . ";\n" if $self->{BGCOLOR};
+  $dot .= "\tbgcolor=\"" . $self->{BGCOLOR} . "\";\n" if $self->{BGCOLOR};
 
   # Global node, edge and graph attributes
   $dot .= "\tnode" . _attributes($self->{NODE_ATTRS}) . ";\n"

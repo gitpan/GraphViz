@@ -1,5 +1,8 @@
 Revision history for Perl module GraphViz.
 
+1.7 Sun Jan 19 21:55:14 GMT 2003
+	- quote bgcolor so that HSV works
+
 1.6 Sat Jan 18 15:47:26 GMT 2003
 	- moved tests to Test::More
 	- new test which checks if graphviz is installed
