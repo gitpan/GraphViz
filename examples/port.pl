@@ -19,5 +19,5 @@ $g->add_edge('New York' => 'London', to_port => 1);
 
 #print $g->_as_debug;
 #print $g->as_text;
-print $g->as_png;
+$g->as_png("port.png");
 

@@ -119,4 +119,4 @@ q{
 
 my $graph = GraphViz::Parse::RecDescent->new($recipegrammar);
 
-print $graph->as_png;
+$graph->as_png("recdescent.png");

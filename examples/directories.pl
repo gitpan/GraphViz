@@ -7,7 +7,7 @@ use GraphViz;
 use GraphViz::Small;
 use GraphViz::No;
 
-my $directory = '/home/acme/ruby/';
+my $directory = '../';
 
 my $graph = GraphViz::No->new({directed => 0});
 
@@ -37,6 +37,6 @@ sub walk {
 }
 
 #print $graph->_as_debug;
-print $graph->as_png;
+$graph->as_png("directories.png");
 
 

@@ -12,7 +12,7 @@ my $xml = '<html><head><title>news</title></head><body>
 
 my $graph = GraphViz::XML->new($xml);
 
-print $graph->as_png;
+$graph->as_png("xml.png");
 #print $g->as_text;
 #print $g->_as_debug;
 

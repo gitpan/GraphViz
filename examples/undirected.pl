@@ -27,5 +27,5 @@ foreach my $i (1..16) {
 
 #print $g->_as_debug;
 #print $g->as_text;
-print $g->as_png;
+$g->as_png("undirected.png");
 

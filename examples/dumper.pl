@@ -19,7 +19,7 @@ my(@d);
 
 my $graph = GraphViz::Data::Grapher->new(\@d);
 
-print $graph->as_png;
+$graph->as_png("dumper.png");
 
 use Data::Dumper;
 warn Dumper(\@d);

@@ -1,10 +1,9 @@
-Lots of crazy ideas where given to me after my talk at the GraphViz,
-including:
+Lots of crazy ideas were given to me after my talk at the German Perl
+Workshop, including:
 
   o Graphing Perl code blocks
   o Graphing Perl 6 RFCs
   o Outputing GraphML
-  o Graphing databases
   o Output a graph to ASCII
   o Graphing the symbol table
   o Graphing RDF

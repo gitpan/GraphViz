@@ -1,5 +1,13 @@
 Revision history for Perl module GraphViz.
 
+1.1 Tue Jul 24 23:54:42 BST 2001
+	- added extra parameter to as_* to allow easy saving of
+	  images: $graph->as_png("pretty.png")
+	- added new GraphViz::Parse::Yapp module to visualise
+	  Parse::Yapp grammars
+	- added new GraphViz::Parse::Yacc module to visualise
+	  Parse::Yacc grammars
+
 1.00 Thu Jun 14 15:10:28 BST 2001
 	- finally released as version 1.00!
 	- added a reference to brian d foy's DDJ article on

@@ -19,4 +19,4 @@ my $regex = '^([0-9a-fA-F]+)(?:x([0-9a-fA-F]+)?)(?:x([0-9a-fA-F]+))?'; # pretty
 my $graph = GraphViz::Regex->new($regex);
 
 #warn $graph->_as_debug;
-print $graph->as_png;
+$graph->as_png("regex.png");

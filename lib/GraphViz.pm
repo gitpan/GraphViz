@@ -9,7 +9,7 @@ use Math::Bezier;
 use IPC::Run qw(run);
 
 # This is incremented every time there is a change to the API
-$VERSION = '1.0';
+$VERSION = '1.1';
 
 
 =head1 NAME
@@ -94,7 +94,9 @@ computational models.
 
 Bundled with this module are several modules to help graph data
 structures (GraphViz::Data::Dumper), XML (GraphViz::XML), and
-Parse::RecDescent grammars (GraphViz::Parse::RecDescent).
+Parse::RecDescent, Parse::Yapp, and yacc grammars
+(GraphViz::Parse::RecDescent, GraphViz::Parse::Yapp, and
+GraphViz::Parse::Yacc).
 
 Note that Marcel Grunauer has released some modules on CPAN to graph
 various other structures. See GraphViz::DBI and GraphViz::ISA for
@@ -543,6 +545,13 @@ sub add_edge {
 There are a number of methods which generate input for dot / neato or
 output the graph in a variety of formats.
 
+Note that if you pass a filename, the image is written to that
+filename. Otherwise, it is returned:
+
+  my $png_image = $g->as_png;
+  # or
+  $g->as_png("pretty.png"); # save image
+
 =over 4
 
 =item as_canon
@@ -642,6 +651,8 @@ Returns a string which contains a layed-out JPEG-format file.
 Returns a string which contains a layed-out PNG-format file.
 
   print $g->as_png;
+  $g->as_png("pretty.png"); # save image
+
 
 =item as_wbmp
 
@@ -721,7 +732,14 @@ sub AUTOLOAD {
   }
 
   if ($name =~ /^as_(ps|hpgl|pcl|mif|pic|gd|gd2|gif|jpeg|png|wbmp|ismap|imap|vrml|vtx|mp|fig|svg|dot|canon|plain)$/) {
-    return $self->_as_generic('-T' . $1, $self->_as_debug);
+    my $filename = shift;
+    my $data = $self->_as_generic('-T' . $1, $self->_as_debug);
+    if ($filename) {
+      open(OUT, ">$filename");
+      print OUT $data;
+      close(OUT);
+    }
+    return $data;
   }
 
   croak "Method $name not defined!";

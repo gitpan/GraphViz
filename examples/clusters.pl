@@ -21,5 +21,5 @@ $g->add_edge('Paris' => 'London');
 
 #print $g->_as_debug;
 #print $g->as_text;
-print $g->as_png;
+$g->as_png("clusters.png");
 

@@ -39,11 +39,15 @@ examples/undirected.png
 examples/xml.pl
 examples/xml.png
 examples/xref.pl
+examples/yacc.pl
+examples/yapp.pl
 lib/Devel/GraphVizProf.pm
 lib/GraphViz.pm
 lib/GraphViz/Data/Grapher.pm
 lib/GraphViz/No.pm
 lib/GraphViz/Parse/RecDescent.pm
+lib/GraphViz/Parse/Yacc.pm
+lib/GraphViz/Parse/Yapp.pm
 lib/GraphViz/Regex.pm
 lib/GraphViz/Regex_YAPE.pm
 lib/GraphViz/Remote.pm

@@ -16,4 +16,4 @@ $g->add_edge('London' => 'Paris');
 $g->add_edge('London' => 'New York', label => 'Far');
 $g->add_edge('Paris' => 'London');
 
-print $g->as_png;
+$g->as_png("remote.png");
