@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
 #
 # This script illustrates how cross-referencing using the
 # B::Xref module can work

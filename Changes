@@ -1,5 +1,14 @@
 Revision history for Perl module GraphViz.
 
+1.5 Sun Jan 13 16:59:14 GMT 2002
+	- updated code reference docs slightly
+	- removed GraphViz::Remote as it was no longer working
+	- new no_overlap graph attribute which tells the graph solver
+	  to not overlap the nodes (idea by Chris Ball)
+	- added patches by Barrie Slaymaker to make GraphViz
+	  work under Win32!
+	- this is the Flight 63 edition
+
 1.4 Wed Oct  3 07:57:42 BST 2001
 	- added new filehandle, scalar reference, and code reference
 	  scheme to as_* to allow streaming of data, rather than

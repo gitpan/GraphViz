@@ -39,7 +39,6 @@ lib/GraphViz/Parse/RecDescent.pm
 lib/GraphViz/Parse/Yacc.pm
 lib/GraphViz/Parse/Yapp.pm
 lib/GraphViz/Regex.pm
-lib/GraphViz/Remote.pm
 lib/GraphViz/Small.pm
 lib/GraphViz/XML.pm
 t/dumper.t

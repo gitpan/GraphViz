@@ -4,7 +4,7 @@ use lib '../lib', 'lib';
 use GraphViz;
 use Test;
 
-BEGIN { plan tests => 28 }
+BEGIN { plan tests => 29 }
 
 my @lines = <DATA>;
 
@@ -438,3 +438,27 @@ digraph test {
 	{rank=same; Boston; Paris}
 }
 
+-- test --
+$g = GraphViz->new(sort => 1, no_overlap => 1);
+
+$g->add_node('London');
+$g->add_node('Paris', label => 'City of\nlurve', rank => 'top');
+$g->add_node('New York');
+$g->add_node('Boston', rank => 'top');
+
+$g->add_edge('Paris' => 'London');
+$g->add_edge('London' => 'New York', label => 'Far');
+$g->add_edge('Boston' => 'New York');
+
+-- expect --
+digraph test {
+	overlap=false;
+	Boston [label="Boston", rank="top"];
+	London [label="London"];
+	"New York" [label="New York"];
+	Paris [label="City of\nlurve", rank="top"];
+	Boston -> "New York";
+	London -> "New York" [label="Far"];
+	Paris -> London;
+	{rank=same; Boston; Paris}
+}

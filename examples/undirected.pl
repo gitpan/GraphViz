@@ -8,7 +8,7 @@ use strict;
 use lib '../lib';
 use GraphViz;
 
-my $g = GraphViz->new(directed => 0);
+my $g = GraphViz->new(directed => 0, no_overlap => 1);
 
 foreach my $i (1..16) {
   my $used = 0;

@@ -59,7 +59,7 @@ $g->add_node(label => 'London');
 {
   # Check coderef
   my $result;
-  $g->as_dot(sub { $result = shift });
+  $g->as_dot(sub { $result .= shift });
   check_result(split /\n/, $result);   
 }
 

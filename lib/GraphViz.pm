@@ -6,10 +6,10 @@ use vars qw($AUTOLOAD $VERSION);
 use Carp;
 use Graph::Directed;
 use Math::Bezier;
-use IPC::Run qw(run);
+use IPC::Run qw(run binary);
 
 # This is incremented every time there is a change to the API
-$VERSION = '1.4';
+$VERSION = '1.5';
 
 
 =head1 NAME
@@ -38,7 +38,8 @@ GraphViz - Interface to the GraphViz graphing tool
 This module provides an interface to layout and image generation of
 directed and undirected graphs in a variety of formats (PostScript,
 PNG, etc.) using the "dot" and "neato" programs from the GraphViz
-project (http://www.graphviz.org/).
+project (http://www.graphviz.org/ or
+http://www.research.att.com/sw/tools/graphviz/).
 
 =head2 What is a graph?
 
@@ -160,6 +161,9 @@ the solver to fun longer and potentially give a better layout. Larger
 values can decrease the running time but with a reduction in layout
 quality. The default is 0.1.
 
+The 'no_overlap' overlap option, if set, tells the graph solver to not
+overlap the nodes.
+
 The 'node', 'edge' and 'graph' attributes allow you to specify global
 node, edge and graph attributes (in addition to those controlled by
 the special attributes described above). The value should be a hash
@@ -210,6 +214,8 @@ sub new {
   $self->{EPSILON} = $config->{epsilon} if (exists $config->{epsilon});
 
   $self->{SORT} = $config->{sort} if (exists $config->{sort});
+
+  $self->{NO_OVERLAP} = $config->{no_overlap} if (exists $config->{no_overlap});
 
   # Global node, edge and graph attributes
   $self->{NODE_ATTRS} = $config->{node} if (exists $config->{node});
@@ -569,7 +575,11 @@ Note that if you pass a filename, the data is written to that
 filename. If you pass a filehandle, the data will be streamed to the
 filehandle. If you pass a scalar reference, then the data will be
 stored in that scalar. If you pass it a code reference, then it is
-called with the data. Otherwise, the data is returned:
+called with the data (note that the coderef may be called multiple
+times if the image is large). Otherwise, the data is returned:
+
+B<Win32 Note:> you will probably want to binmode any filehandles you write
+the output to if you want your application to be portable to Win32.
 
   my $png_image = $g->as_png;
   # or
@@ -579,7 +589,7 @@ called with the data. Otherwise, the data is returned:
   # or
   #g->as_png(\$text); # save data in a scalar
   # or
-  $g->as_png(sub { $png_image = shift });
+  $g->as_png(sub { $png_image .= shift });
 
 =over 4
 
@@ -749,7 +759,7 @@ Returns a string which contains a layed-out simple-format file.
 sub AUTOLOAD {
   my $self = shift;
   my $type = ref($self)
-    or croak "$self is not an object";
+    or croak("$self is not an object");
   my $output = shift;
 
   my $name = $AUTOLOAD;
@@ -862,6 +872,9 @@ sub _as_debug {
   # random start
   $dot .= "\tstart=rand;\n" if $self->{RANDOM_START};
 
+  # no_overlap
+  $dot .= "\toverlap=false;\n" if $self->{NO_OVERLAP};
+
   # Global node, edge and graph attributes
   $dot .= "\tnode" . _attributes($self->{NODE_ATTRS}) . ";\n"
     if exists($self->{NODE_ATTRS});
@@ -955,23 +968,23 @@ sub _as_generic {
   my($self, $type, $dot, $output) = @_;
 
   my $buffer;
-  my @out;
+  my $out;
   if ( ref $output || UNIVERSAL::isa(\$output, 'GLOB') ) {
       # $output is a filehandle or a scalar reference or something.
       # have to take a reference to a bare filehandle or run will
       # complain
-      @out = ref $output ? $output : \$output;
+      $out = ref $output ? $output : \$output;
   } elsif (defined $output) {
-      # if its defined it must be a filename so we'll write to it.
-      @out = ('>', $output);
+      # if it's defined it must be a filename so we'll write to it.
+      $out = $output;
   } else {
       # but otherwise we capture output in a scalar
-      @out = \$buffer;
+      $out = \$buffer;
   }
 
   my $program = $self->{DIRECTED} ? 'dot' : 'neato';
 
-  run [$program, $type], \$dot, @out;
+  run [$program, $type], \$dot, ">", binary(), $out;
 
   return $buffer unless defined $output;
 }
@@ -1038,6 +1051,10 @@ Older versions of GraphViz used a slightly different syntax for node
 and edge adding (with hash references). The new format is slightly
 clearer, although for the moment we support both. Use the new, clear
 syntax, please.
+
+=head1 SEE ALSO
+
+GraphViz::XML, GraphViz::Regex
 
 =head1 AUTHOR
 
