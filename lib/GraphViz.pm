@@ -8,7 +8,7 @@ use Config;
 use IPC::Run qw(run binary);
 
 # This is incremented every time there is a change to the API
-$VERSION = '2.02';
+$VERSION = '2.03';
 
 =head1 NAME
 
@@ -313,6 +313,12 @@ The 'bgcolor' option sets the background colour. A colour value may be
 and 1, or an X11 color name such as 'white', 'black', 'red', 'green',
 'blue', 'yellow', 'magenta', 'cyan', or 'burlywood'.
 
+=item name
+
+The 'name' option sets name of the graph. This option is useful in few
+situations, like client side image map generation, see cmapx.
+By default 'test' is used.
+
 =item node,edge,graph
 
 The 'node', 'edge' and 'graph' attributes allow you to specify global
@@ -355,6 +361,12 @@ sub new {
       $self->{LAYOUT} = $config->{layout};
   } else {
       $self->{LAYOUT} = "dot"; # default layout
+  }
+
+  if (exists $config->{name}) {
+      $self->{NAME} = $config->{name};
+  } else {
+      $self->{NAME} = 'test';
   }
 
   if (exists $config->{bgcolor}) {
@@ -875,14 +887,14 @@ Returns a string which contains a layed-out Windows BMP-format file.
 =item as_cmap  (deprecated)
 
 Returns a string which contains a layed-out HTML client-side image map
-format file.   Use as_cmpax instead.
+format file.   Use as_cmapx instead.
 
   print $g->as_cmap;
 
 =item as_cmapx
 
 Returns a string which contains a layed-out HTML HTML/X client-side image map
-format file.
+format file. Name and id attributes of map element are set to name of the graph.
 
   print $g->as_cmapx;
 
@@ -987,7 +999,7 @@ sub _as_debug {
 
   my $graph_type = $self->{DIRECTED} ? 'digraph' : 'graph';
 
-  $dot .= "$graph_type test {\n";
+  $dot .= $graph_type ." ". $self->{NAME} ." {\n";
 
   # the direction of the graph
   $dot .= "\trankdir=LR;\n" if $self->{RANK_DIR};

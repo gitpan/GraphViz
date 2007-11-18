@@ -1,5 +1,8 @@
 Revision history for Perl module GraphViz.
 
+2.03 Sun Nov 18 14:40:20 GMT 2007
+    - make the graph name configurable (patch by Ruslan Zakirov)
+
 2.02 Fri Jan  7 18:51:06 GMT 2005
 	- remove dependencies on Graph and Math::Bezier
 	- make GraphViz HTML-Like labels work (spotted by Patrice Dehais)
