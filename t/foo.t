@@ -1,64 +1,70 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
 use strict;
-
+use warnings;
 use lib '../lib', 'lib';
 use GraphViz;
 use Test::More tests => 30;
 
 # make a nice simple graph and check how output is handled.
 my $g = GraphViz->new();
-$g->add_node(label => 'London');
+$g->add_node( label => 'London' );
 
 {
-  # Check filehandle
-  my $fh = do { local *FH; *FH; }; # doubled to avoid warnings
-  open $fh, ">as_foo.1"
-    or die "Cannot write to as_foo.1: $!";
-  $g->as_dot($fh);
-  close $fh;
 
-  my @result = read_file('as_foo.1');
-  check_result(@result);
+    # Check filehandle
+    my $fh = do { local *FH; *FH; };    # doubled to avoid warnings
+    open $fh, ">as_foo.1"
+        or die "Cannot write to as_foo.1: $!";
+    $g->as_dot($fh);
+    close $fh;
+
+    my @result = read_file('as_foo.1');
+    check_result(@result);
 }
 
 {
-  # Check filehandle #2
-  local *OUT;
-  open OUT, ">as_foo.2"
-    or die "Cannot write to as_foo.2: $!";
-  $g->as_dot(\*OUT);   
-  close OUT;
 
-  my @result = read_file('as_foo.2');
-  check_result(@result);
+    # Check filehandle #2
+    local *OUT;
+    open OUT, ">as_foo.2"
+        or die "Cannot write to as_foo.2: $!";
+    $g->as_dot( \*OUT );
+    close OUT;
+
+    my @result = read_file('as_foo.2');
+    check_result(@result);
 }
 
 {
-  # Check filename
-  $g->as_dot('as_foo.3');
-  my @result = read_file('as_foo.3');
-  check_result(@result);
+
+    # Check filename
+    $g->as_dot('as_foo.3');
+    my @result = read_file('as_foo.3');
+    check_result(@result);
 }
 
 {
-  # Check scalar ref
-  my $result;
-  $g->as_dot(\$result);
-  check_result(split /\n/, $result);
+
+    # Check scalar ref
+    my $result;
+    $g->as_dot( \$result );
+    check_result( split /\n/, $result );
 }
 
 {
-  # Check returned
-  my $result = $g->as_dot();
-  check_result(split /\n/, $result);   
+
+    # Check returned
+    my $result = $g->as_dot();
+    check_result( split /\n/, $result );
 }
 
 {
-  # Check coderef
-  my $result;
-  $g->as_dot(sub { $result .= shift });
-  check_result(split /\n/, $result);   
+
+    # Check coderef
+    my $result;
+    $g->as_dot( sub { $result .= shift } );
+    check_result( split /\n/, $result );
 }
 
 unlink 'as_foo.1';
@@ -66,17 +72,17 @@ unlink 'as_foo.2';
 unlink 'as_foo.3';
 
 sub read_file {
-  my $filename = shift;
-  local *FILE;
-  open FILE, "<$filename"
-    or die "Cannot read $filename: $!";
-  return (<FILE>);
+    my $filename = shift;
+    local *FILE;
+    open FILE, "<$filename"
+        or die "Cannot read $filename: $!";
+    return (<FILE>);
 }
 
 sub check_result {
-  my @result = @_;
+    my @result = @_;
 
-  my $expect = <<'EOF';
+    my $expect = <<'EOF';
 Expected something like:
     
 digraph test {
@@ -86,11 +92,11 @@ digraph test {
 }
 EOF
 
-  # have to use regexes cause the output includes numbers that may
-  # change each time
-  like($result[0], qr/^digraph test {/);
-  like($result[1], qr/^\s+graph \[ratio=fill\];/);
-  like($result[2], qr/^\s*node\s*\[\s*label\s*=\s*"\\N"\s*\];\s*/);
-  like($result[3], qr/^\s*graph\s*\[bb=.*/);
-  like($result[4], qr/^\s*node1\s*\[label=London.*\];/);
+    # have to use regexes cause the output includes numbers that may
+    # change each time
+    like( $result[0], qr/^digraph test {/ );
+    like( $result[1], qr/^\s+graph \[ratio=fill\];/ );
+    like( $result[2], qr/^\s*node\s*\[\s*label\s*=\s*"\\N"\s*\];\s*/ );
+    like( $result[3], qr/^\s*graph\s*\[bb=.*/ );
+    like( $result[4], qr/^\s*node1\s*\[label=London.*\];/ );
 }

@@ -1,6 +1,7 @@
 package GraphViz::Parse::Yacc;
 
 use strict;
+use warnings;
 use vars qw($VERSION);
 use Carp;
 use lib '../..';
@@ -59,13 +60,12 @@ as an argument here. A GraphViz object is returned.
 =cut
 
 sub new {
-  my $proto = shift;
-  my $class = ref($proto) || $proto;
-  my $filename = shift;
+    my $proto    = shift;
+    my $class    = ref($proto) || $proto;
+    my $filename = shift;
 
-  return _init($filename);
+    return _init($filename);
 }
-
 
 =head2 as_*
 
@@ -84,53 +84,52 @@ for more information. The two most common methods are:
 =cut
 
 sub _init {
-  my $filename = shift;
-  my(@links, %edges, %labels, %is_rule);
-  my $graph = GraphViz->new(concentrate => 1);
+    my $filename = shift;
+    my ( @links, %edges, %labels, %is_rule );
+    my $graph = GraphViz->new( concentrate => 1 );
 
-  open(IN, $filename) || carp("Couldn't read file $filename");
-  my $rule;
+    open( IN, $filename ) || carp("Couldn't read file $filename");
+    my $rule;
 
-  foreach my $line (<IN>) {
-    chomp $line;
-    next unless $line =~ /\w/;
-    next unless $line =~ s/^\s+\d+\s+//;
+    foreach my $line (<IN>) {
+        chomp $line;
+        next unless $line =~ /\w/;
+        next unless $line =~ s/^\s+\d+\s+//;
 
-    if ($line =~ s/([^ ]+) : ?//) {
-      $rule = $1;
+        if ( $line =~ s/([^ ]+) : ?// ) {
+            $rule = $1;
+        }
+
+        $line =~ s/\|\s+//;
+
+        my $text = $line;
+        $is_rule{$rule}++;
+
+        $text = "(empty)" if $text =~ /^\s*$/;
+
+        my $rule_label;
+        foreach my $item ( split ' ', $text ) {
+            $edges{$rule}{$item}++;
+            $rule_label .= $item . " ";
+        }
+        $rule_label .= '\n';
+        $labels{$rule} .= $rule_label;
     }
 
-    $line =~ s/\|\s+//;
-
-    my $text = $line;
-    $is_rule{$rule}++;
-
-    $text = "(empty)" if $text =~ /^\s*$/;
-
-    my $rule_label;
-    foreach my $item (split ' ', $text) {
-      $edges{$rule}{$item}++;
-      $rule_label .= $item . " ";
+    foreach my $from ( keys %edges ) {
+        next unless $is_rule{$from};
+        foreach my $to ( keys %{ $edges{$from} } ) {
+            next unless $is_rule{$to};
+            $graph->add_edge( $from => $to );
+        }
     }
-    $rule_label .= '\n';
-    $labels{$rule} .= $rule_label;
-  }
 
-  foreach my $from (keys %edges) {
-    next unless $is_rule{$from};
-    foreach my $to (keys %{$edges{$from}}) {
-      next unless $is_rule{$to};
-      $graph->add_edge($from => $to);
+    foreach my $rule ( keys %labels ) {
+        $graph->add_node( $rule, label => [ $rule, $labels{$rule} ] );
     }
-  }
 
-
-  foreach my $rule (keys %labels) {
-    $graph->add_node($rule, label => [$rule, $labels{$rule}]);
-  }
-
-  close(IN);
-  return $graph;
+    close(IN);
+    return $graph;
 }
 
 =head1 AUTHOR

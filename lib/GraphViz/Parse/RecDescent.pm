@@ -1,6 +1,7 @@
 package GraphViz::Parse::RecDescent;
 
 use strict;
+use warnings;
 use vars qw($VERSION);
 use Carp;
 use lib '../..';
@@ -64,21 +65,20 @@ grammar to be visualised. A GraphViz object is returned.
 
 =cut
 
-
 sub new {
-  my $proto = shift;
-  my $class = ref($proto) || $proto;
-  my $parser = shift;
+    my $proto  = shift;
+    my $class  = ref($proto) || $proto;
+    my $parser = shift;
 
-  if (ref($parser) ne 'Parse::RecDescent') {
-    # We got a grammar instead, so we construct our own parser
-    $parser = Parse::RecDescent->new($parser)
-      or carp("Bad grammar");
-  }
+    if ( ref($parser) ne 'Parse::RecDescent' ) {
 
-  return _init($parser);
+        # We got a grammar instead, so we construct our own parser
+        $parser = Parse::RecDescent->new($parser)
+            or carp("Bad grammar");
+    }
+
+    return _init($parser);
 }
-
 
 =head2 as_*
 
@@ -96,86 +96,90 @@ for more information. The two most common methods are:
 
 =cut
 
-
 # Given a parser object, we look inside its internals and build up a
 # graph of the rules, productions, and items. This is a tad scary and
 # hopefully Parse::FastDescent will make this all much easier.
 sub _init {
-  my $parser = shift;
+    my $parser = shift;
 
-  # Our wonderful graph object
-  my $graph = GraphViz->new();
+    # Our wonderful graph object
+    my $graph = GraphViz->new();
 
-  # A grammar consists of rules
-  my %rules = %{$parser->{rules}};
+    # A grammar consists of rules
+    my %rules = %{ $parser->{rules} };
 
-  foreach my $rule (keys %rules) {
+    foreach my $rule ( keys %rules ) {
 
-#    print "$rule:\n";
-    my $rule_label;
+        #    print "$rule:\n";
+        my $rule_label;
 
-    # Rules consist of productions
-    my @productions = @{$rules{$rule}->{prods}};
+        # Rules consist of productions
+        my @productions = @{ $rules{$rule}->{prods} };
 
-    foreach my $production (@productions) {
+        foreach my $production (@productions) {
 
-      my $production_text;
+            my $production_text;
 
-      # Productions consist of items
-      my @items = @{$production->{items}};
+            # Productions consist of items
+            my @items = @{ $production->{items} };
 
-      foreach my $item (@items) {
-	my $text;
-	my $type = ref $item;
-	$type =~ s/^Parse::RecDescent:://;
+            foreach my $item (@items) {
+                my $text;
+                my $type = ref $item;
+                $type =~ s/^Parse::RecDescent:://;
 
-	# We ignore Action rules
-	next if $type eq 'Action';
+                # We ignore Action rules
+                next if $type eq 'Action';
 
-	# We could probably use a switch here ;-)
-	if ($type eq 'Subrule') {
-	  $text = $item->{subrule};
-	  $text .= $item->{argcode} if defined($item->{argcode});
-	} elsif ($type =~ /^(Literal|Token|InterpLit)$/) {
-	  # These are all literals
-	  $text = $item->{description};
-	} elsif ($type eq 'Error') {
-	  # We make sure error messages are shown
-	  if ($item->{msg}) {
-	    $text = '<error:' . $item->{msg} . '>';
-	  } else {
-	    $text = '<error>';
-	  }
-	} elsif ($type eq 'Repetition') {
-	  # We make sure we show the repetition specifier
-	  $text = $item->{subrule} . '(' . $item->{repspec} . ')';
-	} elsif ($type eq 'Operator') {
-	  $text = $item->{expected};
-	} elsif ($type =~ /^(Directive|UncondReject)$/) {
-	  $text = $item->{name};
-	} else {
-	  # It's something we don't know about, so complain!
-	  warn "GraphViz::Parse::RecDescent: unknown type $type found!\n";
-	  $text = "?$type?";
-	}
+                # We could probably use a switch here ;-)
+                if ( $type eq 'Subrule' ) {
+                    $text = $item->{subrule};
+                    $text .= $item->{argcode} if defined( $item->{argcode} );
+                } elsif ( $type =~ /^(Literal|Token|InterpLit)$/ ) {
 
-	$production_text .= $text . " ";
-      }
+                    # These are all literals
+                    $text = $item->{description};
+                } elsif ( $type eq 'Error' ) {
 
-#      print "    $production_text\n";
-      $rule_label .= $production_text . "\\n";
+                    # We make sure error messages are shown
+                    if ( $item->{msg} ) {
+                        $text = '<error:' . $item->{msg} . '>';
+                    } else {
+                        $text = '<error>';
+                    }
+                } elsif ( $type eq 'Repetition' ) {
+
+                    # We make sure we show the repetition specifier
+                    $text = $item->{subrule} . '(' . $item->{repspec} . ')';
+                } elsif ( $type eq 'Operator' ) {
+                    $text = $item->{expected};
+                } elsif ( $type =~ /^(Directive|UncondReject)$/ ) {
+                    $text = $item->{name};
+                } else {
+
+                    # It's something we don't know about, so complain!
+                    warn
+                        "GraphViz::Parse::RecDescent: unknown type $type found!\n";
+                    $text = "?$type?";
+                }
+
+                $production_text .= $text . " ";
+            }
+
+            #      print "    $production_text\n";
+            $rule_label .= $production_text . "\\n";
+        }
+
+        # Add the node for the current rule
+        $graph->add_node( $rule, label => [ $rule, $rule_label ] );
+
+        # Make links to the rules called
+        foreach my $called ( @{ $rules{$rule}->{calls} } ) {
+            $graph->add_edge( $rule => $called );
+        }
     }
 
-    # Add the node for the current rule
-    $graph->add_node($rule, label => [$rule, $rule_label]);
-
-    # Make links to the rules called
-    foreach my $called (@{$rules{$rule}->{calls}}) {
-      $graph->add_edge($rule => $called);
-    }
-  }
-
-  return $graph;
+    return $graph;
 }
 
 =head1 BUGS

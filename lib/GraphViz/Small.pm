@@ -1,6 +1,7 @@
 package GraphViz::Small;
 
 use strict;
+use warnings;
 use GraphViz;
 use vars qw($VERSION @ISA);
 
@@ -33,14 +34,14 @@ As for GraphViz.
 =cut
 
 sub add_node_munge {
-  my $self = shift;
-  my $node = shift;
+    my $self = shift;
+    my $node = shift;
 
-  $node->{label} = '';
-  $node->{height} = 0.2;
-  $node->{width} = 0.2;
-  $node->{style} = 'filled';
-  $node->{color} = 'black' unless $node->{color};
+    $node->{label}  = '';
+    $node->{height} = 0.2;
+    $node->{width}  = 0.2;
+    $node->{style}  = 'filled';
+    $node->{color}  = 'black' unless $node->{color};
 }
 
 =head1 AUTHOR

@@ -1,31 +1,31 @@
 #!/usr/bin/perl -w
-
+use strict;
+use warnings;
 use lib '../lib', 'lib';
 use GraphViz::Data::Grapher;
 use Test::More tests => 1;
 
 my @lines = <DATA>;
 
-foreach my $lines (split '-- test --', (join "", @lines)) {
-  my($test, $expect) = split '-- expect --', $lines;
-  next unless $test;
-  $expect =~ s|^\n||mg;
-  $expect =~ s|\n$||mg;
+foreach my $lines ( split '-- test --', ( join "", @lines ) ) {
+    my ( $test, $expect ) = split '-- expect --', $lines;
+    next unless $test;
+    $expect =~ s|^\n||mg;
+    $expect =~ s|\n$||mg;
 
-  $test =~ s|^\n||mg;
-  $test =~ s|\n$||mg;
+    $test =~ s|^\n||mg;
+    $test =~ s|\n$||mg;
 
-  my $g;
-  eval $test;
+    my $g;
+    eval $test;
 
-  my $result = $g->_as_debug;
+    my $result = $g->_as_debug;
 
-  $result =~ s|^\n||mg;
-  $result =~ s|\n$||mg;
+    $result =~ s|^\n||mg;
+    $result =~ s|\n$||mg;
 
-  is($result, $expect, "got expected graph");
+    is( $result, $expect, "got expected graph" );
 }
-
 
 __DATA__
 -- test --

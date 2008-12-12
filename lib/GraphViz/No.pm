@@ -1,6 +1,7 @@
 package GraphViz::No;
 
 use strict;
+use warnings;
 use GraphViz;
 use vars qw($VERSION @ISA);
 
@@ -33,20 +34,20 @@ As for GraphViz.
 =cut
 
 sub add_node_munge {
-  my $self = shift;
-  my $node = shift;
+    my $self = shift;
+    my $node = shift;
 
-  $node->{label} = '';
-  $node->{height} = 0;
-  $node->{width} = 0;
-  $node->{style} = 'invis';
+    $node->{label}  = '';
+    $node->{height} = 0;
+    $node->{width}  = 0;
+    $node->{style}  = 'invis';
 }
 
 sub add_edge_munge {
-  my $self = shift;
-  my $edge = shift;
+    my $self = shift;
+    my $edge = shift;
 
-  $edge->{color} = rand() . "," . "1,1";
+    $edge->{color} = rand() . "," . "1,1";
 }
 
 =head1 AUTHOR

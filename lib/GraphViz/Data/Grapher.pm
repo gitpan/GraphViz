@@ -1,6 +1,7 @@
 package GraphViz::Data::Grapher;
 
 use strict;
+use warnings;
 use vars qw($VERSION);
 use Carp;
 use lib '../..';
@@ -50,19 +51,17 @@ to be visualised. A GraphViz object is returned.
 
 =cut
 
-
 sub new {
-  my $proto = shift;
-  my $class = ref($proto) || $proto;
-  my @items = @_;
+    my $proto = shift;
+    my $class = ref($proto) || $proto;
+    my @items = @_;
 
-  my $graph = GraphViz->new(sort => 1);
+    my $graph = GraphViz->new( sort => 1 );
 
-  _init($graph, @items);
+    _init( $graph, @items );
 
-  return $graph;
+    return $graph;
 }
-
 
 =head2 as_*
 
@@ -80,77 +79,82 @@ documentation for more information. The two most common methods are:
 
 =cut
 
-
 sub _init {
-  my($graph, @items) = @_;
+    my ( $graph, @items ) = @_;
 
-  my @parts;
+    my @parts;
 
-  foreach my $item (@items) {
-    push @parts, _label($item);
-  }
-
-  my $colour = 'black';
-  $colour = 'blue' if @parts == 1;
-
-  my $source = $graph->add_node({ label => \@parts, color => $colour });
-
-  foreach my $port (0.. @items-1) {
-    my $item = $items[$port];
-#warn "$port = $item\n";
-
-    next unless ref $item;
-    my $ref = ref $item;
-    if ($ref eq 'SCALAR') {
-      my $target = _init($graph, $$item);
-      $graph->add_edge({ from => $source, from_port => $port, to => $target });
-    } elsif ($ref eq 'ARRAY') {
-      my $target = _init($graph, @$item);
-      $graph->add_edge({ from => $source, from_port => $port, to => $target });
-    } elsif ($ref eq 'HASH') {
-      my @hash;
-      foreach my $key (sort keys(%$item)) {
-        push @hash, $key;
-      }
-      my $hash = $graph->add_node({ label => \@hash, color => 'brown' });
-      foreach my $port (0.. @hash-1) { 
-        my $key = $hash[$port]; 
-        my $target = _init($graph, $item->{$key});
-        $graph->add_edge({ from => $hash, from_port => $port, to => $target });
-      }
-      $graph->add_edge({ from => $source, from_port => $port, to => $hash });
-    } else {
-      my $target = $ref;
-      $ref =~ s/=.+$//;
-      $graph->add_node({ name=> $target, label => $ref, color => 'red' });
-      $graph->add_edge({ from => $source, from_port => $port, to => $target });
+    foreach my $item (@items) {
+        push @parts, _label($item);
     }
-  }
 
-  return $source;
+    my $colour = 'black';
+    $colour = 'blue' if @parts == 1;
+
+    my $source = $graph->add_node( { label => \@parts, color => $colour } );
+
+    foreach my $port ( 0 .. @items - 1 ) {
+        my $item = $items[$port];
+
+        #warn "$port = $item\n";
+
+        next unless ref $item;
+        my $ref = ref $item;
+        if ( $ref eq 'SCALAR' ) {
+            my $target = _init( $graph, $$item );
+            $graph->add_edge(
+                { from => $source, from_port => $port, to => $target } );
+        } elsif ( $ref eq 'ARRAY' ) {
+            my $target = _init( $graph, @$item );
+            $graph->add_edge(
+                { from => $source, from_port => $port, to => $target } );
+        } elsif ( $ref eq 'HASH' ) {
+            my @hash;
+            foreach my $key ( sort keys(%$item) ) {
+                push @hash, $key;
+            }
+            my $hash
+                = $graph->add_node( { label => \@hash, color => 'brown' } );
+            foreach my $port ( 0 .. @hash - 1 ) {
+                my $key = $hash[$port];
+                my $target = _init( $graph, $item->{$key} );
+                $graph->add_edge(
+                    { from => $hash, from_port => $port, to => $target } );
+            }
+            $graph->add_edge(
+                { from => $source, from_port => $port, to => $hash } );
+        } else {
+            my $target = $ref;
+            $ref =~ s/=.+$//;
+            $graph->add_node(
+                { name => $target, label => $ref, color => 'red' } );
+            $graph->add_edge(
+                { from => $source, from_port => $port, to => $target } );
+        }
+    }
+
+    return $source;
 }
-
 
 sub _label {
-  my $scalar = shift;
+    my $scalar = shift;
 
-  my $ref = ref $scalar;
+    my $ref = ref $scalar;
 
-  if (not defined $scalar) {
-    return 'undef';
-  } elsif ($ref eq 'ARRAY') {
-    return '@';
-  } elsif ($ref eq 'SCALAR') {
-    return '$';
-  } elsif ($ref eq 'HASH') {
-    return '%';
-  } elsif ($ref) {
-    return 'Object';
-  } else {
-    return $scalar;
-  }
+    if ( not defined $scalar ) {
+        return 'undef';
+    } elsif ( $ref eq 'ARRAY' ) {
+        return '@';
+    } elsif ( $ref eq 'SCALAR' ) {
+        return '$';
+    } elsif ( $ref eq 'HASH' ) {
+        return '%';
+    } elsif ($ref) {
+        return 'Object';
+    } else {
+        return $scalar;
+    }
 }
-
 
 =head1 AUTHOR
 

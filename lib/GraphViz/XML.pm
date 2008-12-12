@@ -1,6 +1,7 @@
 package GraphViz::XML;
 
 use strict;
+use warnings;
 use vars qw($VERSION);
 use Carp;
 use lib '..';
@@ -45,18 +46,17 @@ XML to be visualised. A GraphViz object is returned.
 =cut
 
 sub new {
-  my $proto = shift;
-  my $class = ref($proto) || $proto;
-  my $xml = shift;
+    my $proto = shift;
+    my $class = ref($proto) || $proto;
+    my $xml   = shift;
 
-  my $t = XML::Twig->new();
-  $t->parse($xml);
-  my $graph = GraphViz->new();
-  _init($graph, $t->root);
+    my $t = XML::Twig->new();
+    $t->parse($xml);
+    my $graph = GraphViz->new();
+    _init( $graph, $t->root );
 
-  return $graph;
+    return $graph;
 }
-
 
 =head2 as_*
 
@@ -74,29 +74,29 @@ for more information. The two most common methods are:
 
 =cut
 
-
 sub _init {
-  my($g, $root) = @_;
-#warn "$root $root->gi\n";
+    my ( $g, $root ) = @_;
 
-  my $label = $root->gi;
-  my $colour = 'blue';
-  my $shape = 'ellipse';
+    #warn "$root $root->gi\n";
 
-  if ($root->is_pcdata) {
-    $label = $root->text;
-    $label =~ s|^\s+||;
-    $label =~ s|\s+$||;
-    $colour = 'black';
-  } else {
-    $shape = "diamond";
-  }
+    my $label  = $root->gi;
+    my $colour = 'blue';
+    my $shape  = 'ellipse';
 
-  $g->add_node($root, label => $label, color => $colour, shape => $shape);
-  foreach my $child ($root->children) {
-    $g->add_edge($root => $child);
-    _init($g, $child);
-  }
+    if ( $root->is_pcdata ) {
+        $label = $root->text;
+        $label =~ s|^\s+||;
+        $label =~ s|\s+$||;
+        $colour = 'black';
+    } else {
+        $shape = "diamond";
+    }
+
+    $g->add_node( $root, label => $label, color => $colour, shape => $shape );
+    foreach my $child ( $root->children ) {
+        $g->add_edge( $root => $child );
+        _init( $g, $child );
+    }
 
 }
 

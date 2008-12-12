@@ -1,6 +1,7 @@
 package GraphViz;
 
 use strict;
+use warnings;
 use vars qw($AUTOLOAD $VERSION);
 
 use Carp;
@@ -8,7 +9,7 @@ use Config;
 use IPC::Run qw(run binary);
 
 # This is incremented every time there is a change to the API
-$VERSION = '2.03';
+$VERSION = '2.04';
 
 =head1 NAME
 
@@ -333,77 +334,80 @@ to make all nodes box-shaped (unless explicity given another shape):
 
 =cut
 
-
 sub new {
-  my $proto = shift;
-  my $config = shift;
-  my $class = ref($proto) || $proto;
-  my $self = {};
+    my $proto  = shift;
+    my $config = shift;
+    my $class  = ref($proto) || $proto;
+    my $self   = {};
 
-  # Cope with the old hashref format
-  if (ref($config) ne 'HASH') {
-    my %config;
-    %config = ($config, @_) if @_;
-    $config = \%config;
-  }
+    # Cope with the old hashref format
+    if ( ref($config) ne 'HASH' ) {
+        my %config;
+        %config = ( $config, @_ ) if @_;
+        $config = \%config;
+    }
 
-  $self->{NODES} = {};
-  $self->{NODELIST} = [];
-  $self->{EDGES} = [];
+    $self->{NODES}    = {};
+    $self->{NODELIST} = [];
+    $self->{EDGES}    = [];
 
-  if (exists $config->{directed}) {
-      $self->{DIRECTED} = $config->{directed};
-  } else {
-      $self->{DIRECTED} = 1; # default to directed
-  }
+    if ( exists $config->{directed} ) {
+        $self->{DIRECTED} = $config->{directed};
+    } else {
+        $self->{DIRECTED} = 1;    # default to directed
+    }
 
-  if (exists $config->{layout}) {
-      $self->{LAYOUT} = $config->{layout};
-  } else {
-      $self->{LAYOUT} = "dot"; # default layout
-  }
+    if ( exists $config->{layout} ) {
+        $self->{LAYOUT} = $config->{layout};
+    } else {
+        $self->{LAYOUT} = "dot";    # default layout
+    }
 
-  if (exists $config->{name}) {
-      $self->{NAME} = $config->{name};
-  } else {
-      $self->{NAME} = 'test';
-  }
+    if ( exists $config->{name} ) {
+        $self->{NAME} = $config->{name};
+    } else {
+        $self->{NAME} = 'test';
+    }
 
-  if (exists $config->{bgcolor}) {
-      $self->{BGCOLOR} = $config->{bgcolor};
-  }
+    if ( exists $config->{bgcolor} ) {
+        $self->{BGCOLOR} = $config->{bgcolor};
+    }
 
-  $self->{RANK_DIR} = $config->{rankdir} if (exists $config->{rankdir});
+    $self->{RANK_DIR} = $config->{rankdir} if ( exists $config->{rankdir} );
 
-  $self->{WIDTH} = $config->{width} if (exists $config->{width});
-  $self->{HEIGHT} = $config->{height} if (exists $config->{height});
+    $self->{WIDTH}  = $config->{width}  if ( exists $config->{width} );
+    $self->{HEIGHT} = $config->{height} if ( exists $config->{height} );
 
-  $self->{PAGEWIDTH} = $config->{pagewidth} if (exists $config->{pagewidth});
-  $self->{PAGEHEIGHT} = $config->{pageheight} if (exists $config->{pageheight});
+    $self->{PAGEWIDTH} = $config->{pagewidth}
+        if ( exists $config->{pagewidth} );
+    $self->{PAGEHEIGHT} = $config->{pageheight}
+        if ( exists $config->{pageheight} );
 
-  $self->{CONCENTRATE} = $config->{concentrate} if (exists $config->{concentrate});
+    $self->{CONCENTRATE} = $config->{concentrate}
+        if ( exists $config->{concentrate} );
 
-  $self->{RANDOM_START} = $config->{random_start} if (exists $config->{random_start});
+    $self->{RANDOM_START} = $config->{random_start}
+        if ( exists $config->{random_start} );
 
-  $self->{EPSILON} = $config->{epsilon} if (exists $config->{epsilon});
+    $self->{EPSILON} = $config->{epsilon} if ( exists $config->{epsilon} );
 
-  $self->{SORT} = $config->{sort} if (exists $config->{sort});
+    $self->{SORT} = $config->{sort} if ( exists $config->{sort} );
 
-  $self->{OVERLAP} = $config->{overlap} if (exists $config->{overlap});
-  # no_overlap overrides overlap setting.
-  $self->{OVERLAP} = 'false' if (exists $config->{no_overlap});
+    $self->{OVERLAP} = $config->{overlap} if ( exists $config->{overlap} );
 
-  $self->{RATIO} = $config->{ratio} || 'fill';
+    # no_overlap overrides overlap setting.
+    $self->{OVERLAP} = 'false' if ( exists $config->{no_overlap} );
 
-  # Global node, edge and graph attributes
-  $self->{NODE_ATTRS} = $config->{node} if (exists $config->{node});
-  $self->{EDGE_ATTRS} = $config->{edge} if (exists $config->{edge});
-  $self->{GRAPH_ATTRS} = $config->{graph} if (exists $config->{graph});
+    $self->{RATIO} = $config->{ratio} || 'fill';
 
-  bless($self, $class);
-  return $self;
+    # Global node, edge and graph attributes
+    $self->{NODE_ATTRS}  = $config->{node}  if ( exists $config->{node} );
+    $self->{EDGE_ATTRS}  = $config->{edge}  if ( exists $config->{edge} );
+    $self->{GRAPH_ATTRS} = $config->{graph} if ( exists $config->{graph} );
+
+    bless( $self, $class );
+    return $self;
 }
-
 
 =head2 add_node
 
@@ -530,80 +534,89 @@ system, this is just a simple interface to it. See the 'from_port' and
 =cut
 
 sub add_node {
-  my $self = shift;
-  my $node = shift;
+    my $self = shift;
+    my $node = shift;
 
-  # Cope with the new simple notation
-  if (ref($node) ne 'HASH') {
-    my $name = $node;
-    my %node;
-    if (@_ % 2 == 1) {
-      # No name passed
-      %node = ($name, @_);
+    # Cope with the new simple notation
+    if ( ref($node) ne 'HASH' ) {
+        my $name = $node;
+        my %node;
+        if ( @_ % 2 == 1 ) {
+
+            # No name passed
+            %node = ( $name, @_ );
+        } else {
+
+            # Name passed
+            %node = ( @_, name => $name );
+        }
+        $node = \%node;
+    }
+
+    $self->add_node_munge($node) if $self->can('add_node_munge');
+
+    # The _code attribute is our internal name for the node
+    $node->{_code} = $self->_quote_name( $node->{name} );
+
+    if ( not exists $node->{name} ) {
+        $node->{name} = $node->{_code};
+    }
+
+    if ( not exists $node->{label} ) {
+        if ( exists $self->{NODES}->{ $node->{name} }
+            and defined $self->{NODES}->{ $node->{name} }->{label} )
+        {
+
+            # keep our old label if we already exist
+            $node->{label} = $self->{NODES}->{ $node->{name} }->{label};
+        } else {
+            $node->{label} = $node->{name};
+        }
     } else {
-      # Name passed
-      %node = (@_, name => $name);
+        $node->{label} =~ s#([|<>\[\]{}"])#\\$1#g
+            unless $node->{shape}
+                && ($node->{shape} eq 'record'
+                    || (   $node->{label} =~ /^<</
+                        && $node->{shape} eq 'plaintext' )
+                );
     }
-    $node = \%node;
-  }
 
-  $self->add_node_munge($node) if $self->can('add_node_munge');
+    delete $node->{cluster}
+        if exists $node->{cluster} && !length $node->{cluster};
 
-  # The _code attribute is our internal name for the node
-  $node->{_code} = $self->_quote_name($node->{name});
+    $node->{_label} = $node->{label};
 
-  if (not exists $node->{name}) {
-    $node->{name} = $node->{_code};
-  }
+    # Deal with ports
+    if ( ref( $node->{label} ) eq 'ARRAY' ) {
+        $node->{shape} = 'record';    # force a record
+        my $nports = 0;
+        $node->{label} = join '|', map {
+            $_ =~ s#([|<>\[\]{}"])#\\$1#g;
+            '<port' . $nports++ . '>' . $_
+        } ( @{ $node->{label} } );
+    }
 
-  if (not exists $node->{label})  {
-    if (exists $self->{NODES}->{$node->{name}} and defined $self->{NODES}->{$node->{name}}->{label}) {
-      # keep our old label if we already exist
-      $node->{label} = $self->{NODES}->{$node->{name}}->{label};
+    # Save ourselves
+    if ( !exists( $self->{NODES}->{ $node->{name} } ) ) {
+        $self->{NODES}->{ $node->{name} } = $node;
     } else {
-      $node->{label} = $node->{name};
+
+        # If the node already exists, add or overwrite attributes.
+        foreach ( keys %$node ) {
+            $self->{NODES}->{ $node->{name} }->{$_} = $node->{$_};
+        }
     }
-  } else {
-    $node->{label} =~ s#([|<>\[\]{}"])#\\$1#g unless $node->{shape} &&
-      ($node->{shape} eq 'record' || ($node->{label} =~ /^<</ && $node->{shape} eq
-				      'plaintext'));
-  }
 
-  delete $node->{cluster}
-    if exists $node->{cluster} && !length $node->{cluster} ;
+    $self->{CODES}->{ $node->{_code} } = $node->{name};
 
-  $node->{_label} =  $node->{label};
+    # Add the node to the nodelist, which contains the names of
+    # all the nodes in the order that they were inserted (but only
+    # if it's not already there)
+    push @{ $self->{NODELIST} }, $node->{name}
+        unless grep { $_ eq $node->{name} } @{ $self->{NODELIST} };
 
-  # Deal with ports
-  if (ref($node->{label}) eq 'ARRAY') {
-    $node->{shape} = 'record'; # force a record
-    my $nports = 0;
-    $node->{label} = join '|', map
-      { $_ =~ s#([|<>\[\]{}"])#\\$1#g; '<port' . $nports++ . '>' . $_ }
-      (@{$node->{label}});
-  }
-
-  # Save ourselves
-  if (!exists($self->{NODES}->{$node->{name}})) {
-    $self->{NODES}->{$node->{name}} = $node;
-  } else {
-    # If the node already exists, add or overwrite attributes.
-    foreach (keys %$node) {
-      $self->{NODES}->{$node->{name}}->{$_} = $node->{$_};
-    }
-  }
-
-  $self->{CODES}->{$node->{_code}} = $node->{name};
-
-  # Add the node to the nodelist, which contains the names of
-  # all the nodes in the order that they were inserted (but only
-  # if it's not already there)
-  push @{$self->{NODELIST}}, $node->{name} unless
-    grep { $_ eq $node->{name} } @{$self->{NODELIST}};
-
-  return $node->{name};
+    return $node->{name};
 }
-
 
 =head2 add_edge
 
@@ -717,31 +730,30 @@ offset of the port (ie 0, 1, 2...).
 =cut
 
 sub add_edge {
-  my $self = shift;
-  my $edge = shift;
+    my $self = shift;
+    my $edge = shift;
 
-  # Also cope with simple $from => $to
-  if (ref($edge) ne 'HASH') {
-    my $from = $edge;
-    my %edge = (from => $from, to => shift, @_);
-    $edge = \%edge;
-  }
+    # Also cope with simple $from => $to
+    if ( ref($edge) ne 'HASH' ) {
+        my $from = $edge;
+        my %edge = ( from => $from, to => shift, @_ );
+        $edge = \%edge;
+    }
 
-  $self->add_edge_munge($edge) if $self->can('add_edge_munge');
+    $self->add_edge_munge($edge) if $self->can('add_edge_munge');
 
-  if (not exists $edge->{from} or not exists $edge->{to}) {
-    carp("GraphViz add_edge: 'from' or 'to' parameter missing!");
-    return;
-  }
+    if ( not exists $edge->{from} or not exists $edge->{to} ) {
+        carp("GraphViz add_edge: 'from' or 'to' parameter missing!");
+        return;
+    }
 
-  my $from = $edge->{from};
-  my $to = $edge->{to};
-  $self->add_node($from) unless exists $self->{NODES}->{$from};
-  $self->add_node($to) unless exists $self->{NODES}->{$to};
+    my $from = $edge->{from};
+    my $to   = $edge->{to};
+    $self->add_node($from) unless exists $self->{NODES}->{$from};
+    $self->add_node($to)   unless exists $self->{NODES}->{$to};
 
-  push @{$self->{EDGES}}, $edge; # should remove!
+    push @{ $self->{EDGES} }, $edge;    # should remove!
 }
-
 
 =head2 as_canon, as_text, as_gif etc. methods
 
@@ -963,260 +975,285 @@ Returns a string which contains a layed-out simple-format file.
 # Generate magic methods to save typing
 
 sub AUTOLOAD {
-  my $self = shift;
-  my $type = ref($self)
-    or croak("$self is not an object");
-  my $output = shift;
+    my $self = shift;
+    my $type = ref($self)
+        or croak("$self is not an object");
+    my $output = shift;
 
-  my $name = $AUTOLOAD;
-  $name =~ s/.*://;   # strip fully-qualified portion
+    my $name = $AUTOLOAD;
+    $name =~ s/.*://;    # strip fully-qualified portion
 
-  return if $name =~ /DESTROY/;
+    return if $name =~ /DESTROY/;
 
-  if ($name eq 'as_text') {
-    $name = "as_dot";
-  }
+    if ( $name eq 'as_text' ) {
+        $name = "as_dot";
+    }
 
-  if ($name =~ /^as_(ps|hpgl|pcl|mif|pic|gd|gd2|gif|jpeg|png|wbmp|cmapx?|ismap|imap|vrml|vtx|mp|fig|svgz?|dot|canon|plain)$/) {
-    my $data = $self->_as_generic('-T' . $1, $self->_as_debug, $output);
-    return $data;
-  }
+    if ( $name
+        =~ /^as_(ps|hpgl|pcl|mif|pic|gd|gd2|gif|jpeg|png|wbmp|cmapx?|ismap|imap|vrml|vtx|mp|fig|svgz?|dot|canon|plain)$/
+        )
+    {
+        my $data = $self->_as_generic( '-T' . $1, $self->_as_debug, $output );
+        return $data;
+    }
 
-  croak "Method $name not defined!";
+    croak "Method $name not defined!";
 }
-
 
 # Return the main dot text
 sub as_debug {
-  my $self = shift;
-  return $self->_as_debug(@_); 
+    my $self = shift;
+    return $self->_as_debug(@_);
 }
 
 sub _as_debug {
-  my $self = shift;
+    my $self = shift;
 
-  my $dot;
+    my $dot;
 
-  my $graph_type = $self->{DIRECTED} ? 'digraph' : 'graph';
+    my $graph_type = $self->{DIRECTED} ? 'digraph' : 'graph';
 
-  $dot .= $graph_type ." ". $self->{NAME} ." {\n";
+    $dot .= $graph_type . " " . $self->{NAME} . " {\n";
 
-  # the direction of the graph
-  $dot .= "\trankdir=LR;\n" if $self->{RANK_DIR};
+    # the direction of the graph
+    $dot .= "\trankdir=LR;\n" if $self->{RANK_DIR};
 
-  # the size of the graph
-  $dot .= "\tsize=\"" . $self->{WIDTH} . "," . $self->{HEIGHT} ."\";\n" if $self->{WIDTH} && $self->{HEIGHT};
-  $dot .= "\tpage=\"" . $self->{PAGEWIDTH} . "," . $self->{PAGEHEIGHT} ."\";\n" if $self->{PAGEWIDTH} && $self->{PAGEHEIGHT};
-  
-  # Ratio setting
-  $dot .= "\tratio=\"" . $self->{RATIO} . "\";\n";
+    # the size of the graph
+    $dot .= "\tsize=\"" . $self->{WIDTH} . "," . $self->{HEIGHT} . "\";\n"
+        if $self->{WIDTH} && $self->{HEIGHT};
+    $dot
+        .= "\tpage=\""
+        . $self->{PAGEWIDTH} . ","
+        . $self->{PAGEHEIGHT} . "\";\n"
+        if $self->{PAGEWIDTH} && $self->{PAGEHEIGHT};
 
-  # edge merging
-  $dot .= "\tconcentrate=true;\n" if $self->{CONCENTRATE};
+    # Ratio setting
+    $dot .= "\tratio=\"" . $self->{RATIO} . "\";\n";
 
-  # epsilon
-  $dot .= "\tepsilon=" . $self->{EPSILON} . ";\n" if $self->{EPSILON};
+    # edge merging
+    $dot .= "\tconcentrate=true;\n" if $self->{CONCENTRATE};
 
-  # random start
-  $dot .= "\tstart=rand;\n" if $self->{RANDOM_START};
+    # epsilon
+    $dot .= "\tepsilon=" . $self->{EPSILON} . ";\n" if $self->{EPSILON};
 
-  # overlap
-  $dot .= "\toverlap=\"" . $self->{OVERLAP} . "\";\n" if $self->{OVERLAP};
+    # random start
+    $dot .= "\tstart=rand;\n" if $self->{RANDOM_START};
 
-  # color, bgcolor
-  $dot .= "\tbgcolor=\"" . $self->{BGCOLOR} . "\";\n" if $self->{BGCOLOR};
+    # overlap
+    $dot .= "\toverlap=\"" . $self->{OVERLAP} . "\";\n" if $self->{OVERLAP};
 
-  # Global node, edge and graph attributes
-  $dot .= "\tnode" . _attributes($self->{NODE_ATTRS}) . ";\n"
-    if exists($self->{NODE_ATTRS});
-  $dot .= "\tedge" . _attributes($self->{EDGE_ATTRS}) . ";\n"
-    if exists($self->{EDGE_ATTRS});
-  $dot .= "\tgraph" . _attributes($self->{GRAPH_ATTRS}) . ";\n"
-    if exists($self->{GRAPH_ATTRS});
+    # color, bgcolor
+    $dot .= "\tbgcolor=\"" . $self->{BGCOLOR} . "\";\n" if $self->{BGCOLOR};
 
-  my %clusters = ();
-  my %cluster_nodes = ();
-  my %clusters_edge = ();
+    # Global node, edge and graph attributes
+    $dot .= "\tnode" . _attributes( $self->{NODE_ATTRS} ) . ";\n"
+        if exists( $self->{NODE_ATTRS} );
+    $dot .= "\tedge" . _attributes( $self->{EDGE_ATTRS} ) . ";\n"
+        if exists( $self->{EDGE_ATTRS} );
+    $dot .= "\tgraph" . _attributes( $self->{GRAPH_ATTRS} ) . ";\n"
+        if exists( $self->{GRAPH_ATTRS} );
 
-  my $arrow = $self->{DIRECTED} ? ' -> ' : ' -- ';
+    my %clusters      = ();
+    my %cluster_nodes = ();
+    my %clusters_edge = ();
 
-  # Add all the nodes
-  my @nodelist = @{$self->{NODELIST}};
-  @nodelist = sort @nodelist if $self->{SORT};
+    my $arrow = $self->{DIRECTED} ? ' -> ' : ' -- ';
 
-  foreach my $name (@nodelist) {
-    my $node = $self->{NODES}->{$name};
+    # Add all the nodes
+    my @nodelist = @{ $self->{NODELIST} };
+    @nodelist = sort @nodelist if $self->{SORT};
 
-    # Note all the clusters
-    if (exists $node->{cluster} && $node->{cluster}) {
-      # map "name" to value in case cluster attribute is not a simple string
-      $clusters{$node->{cluster}} = $node->{cluster};
-      push @{$cluster_nodes{$node->{cluster}}}, $name;
-      next;
+    foreach my $name (@nodelist) {
+        my $node = $self->{NODES}->{$name};
+
+        # Note all the clusters
+        if ( exists $node->{cluster} && $node->{cluster} ) {
+
+        # map "name" to value in case cluster attribute is not a simple string
+            $clusters{ $node->{cluster} } = $node->{cluster};
+            push @{ $cluster_nodes{ $node->{cluster} } }, $name;
+            next;
+        }
+
+        $dot .= "\t" . $node->{_code} . _attributes($node) . ";\n";
     }
 
-    $dot .= "\t" . $node->{_code} . _attributes($node) . ";\n";
-  }
+    # Add all the edges
+    foreach
+        my $edge ( sort { $a->{from} cmp $b->{from} || $a->{to} cmp $b->{to} }
+        @{ $self->{EDGES} } )
+    {
 
-  # Add all the edges
-  foreach my $edge (sort { $a->{from} cmp $b->{from} || $a->{to} cmp $b->{to} } @{$self->{EDGES}}) {
+        my $from = $self->{NODES}->{ $edge->{from} }->{_code};
+        my $to   = $self->{NODES}->{ $edge->{to} }->{_code};
 
-    my $from = $self->{NODES}->{$edge->{from}}->{_code};
-    my $to = $self->{NODES}->{$edge->{to}}->{_code};
+        # Deal with ports
+        if ( exists $edge->{from_port} ) {
+            $from = '"' . $from . '"' . ':port' . $edge->{from_port};
+        }
+        if ( exists $edge->{to_port} ) {
+            $to = '"' . $to . '"' . ':port' . $edge->{to_port};
+        }
 
-    # Deal with ports
-    if (exists $edge->{from_port}) {
-      $from = '"' . $from . '"' . ':port' . $edge->{from_port};
+        if (   exists $self->{NODES}->{$from}
+            && exists $self->{NODES}->{$from}->{cluster}
+            && exists $self->{NODES}->{$to}
+            && exists $self->{NODES}->{$to}->{cluster}
+            && $self->{NODES}->{$from}->{cluster} eq
+            $self->{NODES}->{$to}->{cluster} )
+        {
+
+            $clusters_edge{ $self->{NODES}->{$from}->{cluster} }
+                .= "\t\t" . $from . $arrow . $to . _attributes($edge) . ";\n";
+        } else {
+            $dot .= "\t" . $from . $arrow . $to . _attributes($edge) . ";\n";
+        }
     }
-    if (exists $edge->{to_port}) {
-      $to = '"' . $to . '"' . ':port' . $edge->{to_port};
+
+    foreach my $clustername ( sort keys %cluster_nodes ) {
+        my $cluster = $clusters{$clustername};
+        my $attrs;
+        my $name;
+        if ( ref($cluster) eq 'HASH' ) {
+            if ( exists $cluster->{label} ) {
+                $name = $cluster->{label};
+            } elsif ( exists $cluster->{name} ) {
+
+                # "coerce" name attribute into label attribute
+                $name = $cluster->{name};
+                $cluster->{label} = $name;
+                delete $cluster->{name};
+            }
+            $attrs = _attributes($cluster);
+        } else {
+            $name = $cluster;
+            $attrs = _attributes( { label => $cluster } );
+        }
+
+        # rewrite attributes string slightly
+        $attrs =~ s/^\s\[//o;
+        $attrs =~ s/,/;/go;
+        $attrs =~ s/\]$//o;
+
+        $dot .= "\tsubgraph cluster_" . $self->_quote_name($name) . " {\n";
+        $dot .= "\t\t$attrs;\n";
+        $dot .= join "", map {
+            "\t\t"
+                . $self->{NODES}->{$_}->{_code}
+                . _attributes( $self->{NODES}->{$_} ) . ";\n";
+        } ( @{ $cluster_nodes{$cluster} } );
+        $dot .= $clusters_edge{$cluster} if exists $clusters_edge{$cluster};
+        $dot .= "\t}\n";
     }
 
-    if (exists $self->{NODES}->{$from} && exists $self->{NODES}->{$from}->{cluster}
-        && exists $self->{NODES}->{$to} && exists $self->{NODES}->{$to}->{cluster} &&
-	$self->{NODES}->{$from}->{cluster} eq $self->{NODES}->{$to}->{cluster}) {
-
-      $clusters_edge{$self->{NODES}->{$from}->{cluster}} .= "\t\t" . $from . $arrow . $to . _attributes($edge) . ";\n";
-    } else {
-      $dot .= "\t" . $from . $arrow . $to . _attributes($edge) . ";\n";
+    # Deal with ranks
+    my %ranks;
+    foreach my $name (@nodelist) {
+        my $node = $self->{NODES}->{$name};
+        next unless exists $node->{rank};
+        push @{ $ranks{ $node->{rank} } }, $name;
     }
-  }
 
-  foreach my $clustername (sort keys %cluster_nodes) {
-    my $cluster = $clusters{$clustername};
-    my $attrs;
-    my $name;
-    if (ref($cluster) eq 'HASH') {
-      if (exists $cluster->{label}) {
-          $name = $cluster->{label};
-      }
-      elsif (exists $cluster->{name}) {
-          # "coerce" name attribute into label attribute
-          $name = $cluster->{name};
-          $cluster->{label} = $name;
-          delete $cluster->{name};
-      }
-      $attrs = _attributes($cluster);
-    } else {
-      $name = $cluster;
-      $attrs = _attributes({ label => $cluster});
+    foreach my $rank ( keys %ranks ) {
+        $dot .= qq|\t{rank=same; |;
+        $dot .= join '; ', map { $self->_quote_name($_) } @{ $ranks{$rank} };
+        $dot .= qq|}\n|;
     }
-    # rewrite attributes string slightly
-    $attrs =~ s/^\s\[//o;
-    $attrs =~ s/,/;/go;
-    $attrs =~ s/\]$//o;
 
-    $dot .= "\tsubgraph cluster_" . $self->_quote_name($name) . " {\n";
-    $dot .= "\t\t$attrs;\n";
-    $dot .= join "", map { "\t\t" . $self->{NODES}->{$_}->{_code} . _attributes($self->{NODES}->{$_}) . ";\n"; } (@{$cluster_nodes{$cluster}});
-    $dot .= $clusters_edge{$cluster} if exists $clusters_edge{$cluster};
-    $dot .= "\t}\n";
-  }
+    # {rank=same; Paris; Boston}
 
-  # Deal with ranks
-  my %ranks;
-  foreach my $name (@nodelist) {
-    my $node = $self->{NODES}->{$name};
-    next unless exists $node->{rank};
-    push @{$ranks{$node->{rank}}}, $name;
-  }
+    $dot .= "}\n";
 
-  foreach my $rank (keys %ranks) {
-    $dot .= qq|\t{rank=same; |;
-    $dot .= join '; ', map { $self->_quote_name($_) } @{$ranks{$rank}};
-    $dot .= qq|}\n|;
-  }
-# {rank=same; Paris; Boston}
-
-
-  $dot .= "}\n";
-
-  return $dot;
+    return $dot;
 }
-
 
 # Call dot / neato / twopi / circo / fdp with the input text and any parameters
 
 sub _as_generic {
-  my($self, $type, $dot, $output) = @_;
+    my ( $self, $type, $dot, $output ) = @_;
 
-  my $buffer;
-  my $out;
-  if ( ref $output || UNIVERSAL::isa(\$output, 'GLOB') ) {
-      # $output is a filehandle or a scalar reference or something.
-      # have to take a reference to a bare filehandle or run will
-      # complain
-      $out = ref $output ? $output : \$output;
-  } elsif (defined $output) {
-      # if it's defined it must be a filename so we'll write to it.
-      $out = $output;
-  } else {
-      # but otherwise we capture output in a scalar
-      $out = \$buffer;
-  }
+    my $buffer;
+    my $out;
+    if ( ref $output || UNIVERSAL::isa( \$output, 'GLOB' ) ) {
 
-  my $program = $self->{LAYOUT};
+        # $output is a filehandle or a scalar reference or something.
+        # have to take a reference to a bare filehandle or run will
+        # complain
+        $out = ref $output ? $output : \$output;
+    } elsif ( defined $output ) {
 
-  run [$program, $type], \$dot, ">", binary(), $out;
+        # if it's defined it must be a filename so we'll write to it.
+        $out = $output;
+    } else {
 
-  return $buffer unless defined $output;
+        # but otherwise we capture output in a scalar
+        $out = \$buffer;
+    }
+
+    my $program = $self->{LAYOUT};
+
+    run [ $program, $type ], \$dot, ">", binary(), $out;
+
+    return $buffer unless defined $output;
 }
-
 
 # Quote a node/edge name using dot / neato / circo / fdp / twopi's quoting rules
 
 sub _quote_name {
-  my($self, $name) = @_;
-  my $realname = $name;
+    my ( $self, $name ) = @_;
+    my $realname = $name;
 
-  return $self->{_QUOTE_NAME_CACHE}->{$name} if $name && exists $self->{_QUOTE_NAME_CACHE}->{$name};
+    return $self->{_QUOTE_NAME_CACHE}->{$name}
+        if $name && exists $self->{_QUOTE_NAME_CACHE}->{$name};
 
-  if (defined $name && $name =~ /^[a-zA-Z]\w*$/ && $name ne "graph") {
-    # name is fine
-  } elsif (defined $name && $name =~ /^[a-zA-Z](\w| )*$/) {
-    # name contains spaces, so quote it
-    $name = '"' . $name . '"';
-  } else {
-    # name contains weird characters - let's make up a name for it
-    $name = 'node' . ++$self->{_NAME_COUNTER};
-  }
+    if ( defined $name && $name =~ /^[a-zA-Z]\w*$/ && $name ne "graph" ) {
 
-  $self->{_QUOTE_NAME_CACHE}->{$realname} = $name if defined $realname;
+        # name is fine
+    } elsif ( defined $name && $name =~ /^[a-zA-Z](\w| )*$/ ) {
 
-#  warn "# $realname -> $name\n";
+        # name contains spaces, so quote it
+        $name = '"' . $name . '"';
+    } else {
 
-  return $name;
+        # name contains weird characters - let's make up a name for it
+        $name = 'node' . ++$self->{_NAME_COUNTER};
+    }
+
+    $self->{_QUOTE_NAME_CACHE}->{$realname} = $name if defined $realname;
+
+    #  warn "# $realname -> $name\n";
+
+    return $name;
 }
-
 
 # Return the attributes of a node or edge as a dot / neato / circo / fdp / twopi attribute
 # string
 
 sub _attributes {
-  my $thing = shift;
+    my $thing = shift;
 
-  my @attributes;
+    my @attributes;
 
-  foreach my $key (keys %$thing) {
-    next if $key =~ /^_/;
-    next if $key =~ /^(to|from|name|cluster|from_port|to_port)$/;
+    foreach my $key ( keys %$thing ) {
+        next if $key =~ /^_/;
+        next if $key =~ /^(to|from|name|cluster|from_port|to_port)$/;
 
-    my $value = $thing->{$key};
-    $value =~ s|"|\"|g;
-    $value = '"' . $value . '"' unless ($key eq 'label' && $value =~ /^<</);
-    $value =~ s|\n|\\n|g;
+        my $value = $thing->{$key};
+        $value =~ s|"|\"|g;
+        $value = '"' . $value . '"'
+            unless ( $key eq 'label' && $value =~ /^<</ );
+        $value =~ s|\n|\\n|g;
 
-    $value = '""' if not defined $value;
-    push @attributes, "$key=$value";
-  }
+        $value = '""' if not defined $value;
+        push @attributes, "$key=$value";
+    }
 
-  if (@attributes) {
-    return ' [' . (join ', ', sort @attributes) . "]";
-  } else {
-    return "";
-  }
+    if (@attributes) {
+        return ' [' . ( join ', ', sort @attributes ) . "]";
+    } else {
+        return "";
+    }
 }
-
 
 =head1 NOTES
 
@@ -1236,6 +1273,8 @@ Leon Brocard E<lt>F<acme@astray.com>E<gt>
 =head1 COPYRIGHT
 
 Copyright (C) 2000-4, Leon Brocard
+
+=head1 LICENSE
 
 This module is free software; you can redistribute it or modify it
 under the same terms as Perl itself.
