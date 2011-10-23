@@ -5,10 +5,9 @@ use warnings;
 use GraphViz;
 use vars qw($VERSION @ISA);
 
-# This is incremented every time there is a change to the API
-$VERSION = '0.01';
-
 @ISA = qw(GraphViz);
+
+our $VERSION = '2.05';
 
 =head1 NAME
 

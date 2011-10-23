@@ -8,8 +8,7 @@ use lib '..';
 use GraphViz;
 use XML::Twig;
 
-# This is incremented every time there is a change to the API
-$VERSION = '0.01';
+our $VERSION = '2.05';
 
 =head1 NAME
 

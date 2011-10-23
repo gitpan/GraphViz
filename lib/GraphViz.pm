@@ -8,12 +8,11 @@ use Carp;
 use Config;
 use IPC::Run qw(run binary);
 
-# This is incremented every time there is a change to the API
-$VERSION = '2.04';
+our $VERSION = '2.05';
 
 =head1 NAME
 
-GraphViz - Interface to the GraphViz graphing tool
+GraphViz - Interface to AT&T's GraphViz. Deprecated. See GraphViz2
 
 =head1 SYNOPSIS
 
@@ -38,6 +37,32 @@ This module provides an interface to layout and image generation of directed
 and undirected graphs in a variety of formats (PostScript, PNG, etc.) using the
 "dot", "neato", "twopi", "circo" and "fdp"  programs from the GraphViz project
 (http://www.graphviz.org/ or http://www.research.att.com/sw/tools/graphviz/).
+
+GraphViz is deprecated in favour of L<GraphViz2>.
+
+=head2 Modules in this distro
+
+=over 4
+
+=item o GraphViz
+
+=item o GraphViz::No
+
+=item o GraphViz::Small
+
+=item o GraphViz::Regex
+
+=item o GraphViz::XML
+
+=item o GraphViz::Data::Grapher
+
+=item o GraphViz::Parse::RecDescent
+
+=item o GraphViz::Parse::Yacc
+
+=item o GraphViz::Parse::Yapp
+
+=back
 
 =head2 What is a graph?
 
@@ -187,12 +212,15 @@ page then the resulting PostScript image is a sequence of pages that
 can be tiled or assembled into a mosaic of the full image. (This only
 works for PostScript output).
 
-
 =item concentrate
 
 The 'concentrate' attribute controls enables an edge merging technique
 to reduce clutter in dense layouts of directed graphs. The default is
 not to merge edges.
+
+=item orientation
+
+This option controls the angle, in degrees, used to rotate polygon node shapes.
 
 =item random_start
 
@@ -385,6 +413,9 @@ sub new {
 
     $self->{CONCENTRATE} = $config->{concentrate}
         if ( exists $config->{concentrate} );
+
+    $self->{ORIENTATION} = $config->{orientation}
+        if ( exists $config->{orientation} );
 
     $self->{RANDOM_START} = $config->{random_start}
         if ( exists $config->{random_start} );
@@ -1033,6 +1064,9 @@ sub _as_debug {
     # edge merging
     $dot .= "\tconcentrate=true;\n" if $self->{CONCENTRATE};
 
+    # Orientation
+    $dot .= "\torientation=$self->{ORIENTATION};\n" if $self->{ORIENTATION};
+
     # epsilon
     $dot .= "\tepsilon=" . $self->{EPSILON} . ";\n" if $self->{EPSILON};
 
@@ -1264,12 +1298,18 @@ syntax, please.
 
 =head1 SEE ALSO
 
-GraphViz::XML, GraphViz::Regex
+GraphViz is deprecated in favour of L<GraphViz2>.
+
+=head1 Machine-Readable Change Log
+
+The file CHANGES was converted into Changelog.ini by L<Module::Metadata::Changes>.
 
 =head1 AUTHOR
 
-Leon Brocard E<lt>F<acme@astray.com>E<gt>
+Leon Brocard: E<lt>F<acme@astray.com>E<gt>.
 
+Current maintainer: Ron Savage I<E<lt>ron@savage.net.auE<gt>>.
+ 
 =head1 COPYRIGHT
 
 Copyright (C) 2000-4, Leon Brocard

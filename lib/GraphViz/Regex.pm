@@ -12,8 +12,7 @@ use IPC::Run qw(run);
 
 # See perldebguts
 
-# This is incremented every time there is a change to the API
-$VERSION = '0.02';
+our $VERSION = '2.05';
 
 my $DEBUG = 0;    # whether debugging statements are shown
 
