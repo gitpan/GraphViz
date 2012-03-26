@@ -1,10 +1,10 @@
 {
-   "abstract" : "Interface to the GraphViz graphing tool",
+   "abstract" : "Interface to AT&T's GraphViz. Deprecated. See GraphViz2",
    "author" : [
       "Leon Brocard <acme@astray.com>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.38, CPAN::Meta::Converter version 2.110930",
+   "generated_by" : "Module::Build version 0.4, CPAN::Meta::Converter version 2.120630",
    "license" : [
       "perl_5"
    ],
@@ -28,7 +28,7 @@
       "runtime" : {
          "requires" : {
             "Carp" : "1.01",
-            "Config" : 0,
+            "Config" : "0",
             "File::Which" : "1.09",
             "Getopt::Long" : "2.34",
             "IO::Dir" : "1.04",
@@ -49,43 +49,43 @@
    "provides" : {
       "Devel::GraphVizProf" : {
          "file" : "lib/Devel/GraphVizProf.pm",
-         "version" : "2.09"
+         "version" : "2.10"
       },
       "GraphViz" : {
          "file" : "lib/GraphViz.pm",
-         "version" : "2.09"
+         "version" : "2.10"
       },
       "GraphViz::Data::Grapher" : {
          "file" : "lib/GraphViz/Data/Grapher.pm",
-         "version" : "2.09"
+         "version" : "2.10"
       },
       "GraphViz::No" : {
          "file" : "lib/GraphViz/No.pm",
-         "version" : "2.09"
+         "version" : "2.10"
       },
       "GraphViz::Parse::RecDescent" : {
          "file" : "lib/GraphViz/Parse/RecDescent.pm",
-         "version" : "2.09"
+         "version" : "2.10"
       },
       "GraphViz::Parse::Yacc" : {
          "file" : "lib/GraphViz/Parse/Yacc.pm",
-         "version" : "2.09"
+         "version" : "2.10"
       },
       "GraphViz::Parse::Yapp" : {
          "file" : "lib/GraphViz/Parse/Yapp.pm",
-         "version" : "2.09"
+         "version" : "2.10"
       },
       "GraphViz::Regex" : {
          "file" : "lib/GraphViz/Regex.pm",
-         "version" : "2.09"
+         "version" : "2.10"
       },
       "GraphViz::Small" : {
          "file" : "lib/GraphViz/Small.pm",
-         "version" : "2.09"
+         "version" : "2.10"
       },
       "GraphViz::XML" : {
          "file" : "lib/GraphViz/XML.pm",
-         "version" : "2.09"
+         "version" : "2.10"
       }
    },
    "release_status" : "stable",
@@ -94,5 +94,5 @@
          "http://dev.perl.org/licenses/"
       ]
    },
-   "version" : "2.09"
+   "version" : "2.10"
 }
